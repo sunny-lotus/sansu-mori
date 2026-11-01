@@ -170,6 +170,12 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 @keyframes build{0%{transform:translate(-50%,-100%) scale(.2);opacity:0}70%{transform:translate(-50%,-100%) scale(1.12);opacity:1}100%{transform:translate(-50%,-100%)}}
 .board .it.sel{outline:4px solid var(--now);outline-offset:4px;border-radius:12px}
 .board .visit{position:absolute;display:block;height:22%;transform:translate(-50%,-100%);animation:hop2 1.4s ease-in-out infinite;z-index:2}
+.board .player{position:absolute;display:block;height:22%;transform:translate(-50%,-100%);z-index:2;pointer-events:none;filter:drop-shadow(0 3px 1px rgba(43,33,24,.2))}
+.board .player img{display:block;height:100%;width:auto}
+.board .player.walking img{animation:player-step .22s ease-in-out infinite alternate}
+@keyframes player-step{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-4px) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.board .player.walking img{animation:none}}
+.walk-note{margin:8px 0 0;font-size:13px;color:var(--mute)}
 .board .visit img{display:block;height:100%;width:auto}
 @keyframes hop2{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
 .board .spark{position:absolute;pointer-events:none;font-size:28px;animation:spark .9s ease-out forwards;z-index:3}
@@ -302,10 +308,10 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(prog)); } catch
 const nowCamp = () => { const i = prog.cleared.indexOf(false); return i < 0 ? 4 : i; };
 const stateOf = (i) => prog.cleared[i] ? "done" : i === nowCamp() ? "now" : "todo";
 // QR に 入れる 中身：続きの データだけ（名前などは 入れない）
-function packSave() { return btoa(unescape(encodeURIComponent(JSON.stringify({ c: prog.cleared.map((x) => x ? 1 : 0).join(""), m: [prog.mats.donguri, prog.mats.maki, prog.mats.tane], l: prog.lv, p: prog.pos })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function packSave() { return btoa(unescape(encodeURIComponent(JSON.stringify({ c: prog.cleared.map((x) => x ? 1 : 0).join(""), m: [prog.mats.donguri, prog.mats.maki, prog.mats.tane], l: prog.lv, p: prog.pos, a: prog.player })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 function unpackSave(s) {
   const o = JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))));
-  return { cleared: o.c.split("").map((x) => x === "1"), mats: { donguri: o.m[0] | 0, maki: o.m[1] | 0, tane: o.m[2] | 0 }, lv: o.l || {}, pos: o.p || {} };
+  return { cleared: o.c.split("").map((x) => x === "1"), mats: { donguri: o.m[0] | 0, maki: o.m[1] | 0, tane: o.m[2] | 0 }, lv: o.l || {}, pos: o.p || {}, player: o.a };
 }
 
 /* ================= 画面の じょうたい ================= */
@@ -671,7 +677,9 @@ function costHTML(c) {
   return `<span class="cost">${Object.entries(c).map(([m, n]) => `<span class="${prog.mats[m] < n ? "lack" : ""}"><img src="${matOf(m).img}" alt="${matOf(m).name}">${n}</span>`).join("")}</span>`;
 }
 function boardHTML(mini) {
-  const lions = lvOf("house") >= 2 ? `<span class="visit" style="left:${(prog.pos.house || [70, 40])[0] - 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 14)}%">${Lions.svg("hana", "happy")}</span><span class="visit" style="left:${(prog.pos.house || [70, 40])[0] + 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 16)}%;animation-delay:-.7s">${Lions.svg("niji", "normal")}</span>` : "";
+  const playerPos = Array.isArray(prog.player) ? prog.player : [50, 78];
+  const lions = `<span class="player" ${mini ? "" : 'id="camp-player"'} style="left:${playerPos[0]}%;top:${playerPos[1]}%" aria-label="はな">${Lions.svg("hana", "happy")}</span>` +
+    (lvOf("house") >= 2 ? `<span class="visit" style="left:${Math.min(88, (prog.pos.house || [70, 40])[0] + 10)}%;top:${Math.min(88, (prog.pos.house || [70, 40])[1] + 16)}%">${Lions.svg("niji", "normal")}</span>` : "");
   const its = ITEMS.map((it) => { const lv = lvOf(it.key), p = prog.pos[it.key];
     if (!lv || !p) return "";
     return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"></span>`; }).join("");
@@ -690,6 +698,7 @@ function vSite() {
         <button onclick="campSel=null;render()">とじる</button></div>` : ""}
     </div>
     <aside class="panel">
+      <p class="walk-note">地面を タップすると はなが 歩くよ。矢印キーでも 動かせるよ。</p>
       ${talkHTML([msg])}
       <h2 class="k">つくる</h2>
       <div class="shop">${ITEMS.filter((it) => !lvOf(it.key)).map((it) => `<button onclick="build('${it.key}')" ${canPay(nextCost(it)) ? "" : "disabled"}><img src="${campImg(it.stages[0][0])}" alt=""><span><span class="nm k">${it.name}</span><br>${costHTML(nextCost(it))}</span></button>`).join("") || "<p class='k' style='margin:0'>ぜんぶ つくったよ！</p>"}</div>
@@ -763,12 +772,83 @@ function checkLoad() {
     <div class="row"><button onclick="closeModal()">やめる</button><button class="dark" onclick="prog=Object.assign(blank(),window.__load);save();closeModal();render()">つづける</button></div>`);
 }
 
+
+let stopCampWalk = () => {};
+function setupCampWalk() {
+  const board = $("board"), player = $("camp-player");
+  if (!board || !player) return;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const raw = prog.player;
+  let pos = Array.isArray(raw) && raw.length === 2 && raw.every(Number.isFinite)
+    ? [clamp(raw[0], 12, 88), clamp(raw[1], 26, 88)] : [50, 78];
+  let target = null, frame = 0, previous = 0, dirty = false;
+  const keys = new Set();
+  function paint() {
+    player.style.left = pos[0] + "%"; player.style.top = pos[1] + "%";
+  }
+  function persist() {
+    if (dirty) { prog.player = pos.slice(); save(); dirty = false; }
+  }
+  function tick(now) {
+    const dt = previous ? Math.min((now - previous) / 1000, .05) : 0;
+    previous = now;
+    const r = board.getBoundingClientRect();
+    let dx = (keys.has("ArrowRight") ? 1 : 0) - (keys.has("ArrowLeft") ? 1 : 0);
+    let dy = (keys.has("ArrowDown") ? 1 : 0) - (keys.has("ArrowUp") ? 1 : 0);
+    if (!dx && !dy && target) {
+      dx = (target[0] - pos[0]) * r.width / 100;
+      dy = (target[1] - pos[1]) * r.height / 100;
+    }
+    const distance = Math.hypot(dx, dy);
+    const step = keys.size ? r.width * .35 * dt : Math.min(distance, r.width * .35 * dt);
+    const before = pos.slice();
+    if (distance && r.width && r.height) {
+      pos[0] = clamp(pos[0] + dx / distance * step / r.width * 100, 12, 88);
+      pos[1] = clamp(pos[1] + dy / distance * step / r.height * 100, 26, 88);
+      if (target && distance <= step + .1) target = null;
+    }
+    const moving = pos[0] !== before[0] || pos[1] !== before[1];
+    player.classList.toggle("walking", moving);
+    if (moving) { dirty = true; paint(); } else persist();
+    frame = requestAnimationFrame(tick);
+  }
+  function tap(e) {
+    if (e.target.closest(".it") || drag) return;
+    const r = board.getBoundingClientRect();
+    target = [clamp((e.clientX - r.left) / r.width * 100, 12, 88),
+      clamp((e.clientY - r.top) / r.height * 100, 26, 88)];
+  }
+  function keydown(e) {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key) ||
+        e.target.closest("input,textarea,select,[contenteditable]") || document.querySelector(".modal")) return;
+    e.preventDefault(); keys.add(e.key); target = null;
+  }
+  function keyup(e) { keys.delete(e.key); }
+  function blur() { keys.clear(); target = null; persist(); }
+  board.addEventListener("click", tap);
+  window.addEventListener("keydown", keydown);
+  window.addEventListener("keyup", keyup);
+  window.addEventListener("blur", blur);
+  window.addEventListener("pagehide", blur);
+  paint(); frame = requestAnimationFrame(tick);
+  stopCampWalk = () => {
+    cancelAnimationFrame(frame); persist();
+    window.removeEventListener("keydown", keydown);
+    window.removeEventListener("keyup", keyup);
+    window.removeEventListener("blur", blur);
+    window.removeEventListener("pagehide", blur);
+    board.removeEventListener("click", tap);
+  };
+}
+
 /* ================= 表示 ================= */
 function render() {
+  stopCampWalk();
   $("app").innerHTML = view === "forest" ? vForest() : view === "map" ? vMap() : view === "site" ? vSite() : vCamp();
   document.body.classList.toggle("outdoor", view === "forest" || view === "map");
   document.body.classList.toggle("forestbg", view === "forest" || view === "map");
   fitForest();
+  if (view === "site") setupCampWalk();
   const first = document.querySelector(".qcard input:not([disabled])"); if (first && !solved && intro < 0) first.focus({ preventScroll: true });
 }
 render();
