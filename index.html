@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>算数の森</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 決まり（AIへのおねがい.md）：紙・すみ色の線2px・角14px・さわると浮いて影・余白は8の倍数・文字は13/16/20/28。
+   算数の森らしさ：原っぱの背景、森の緑、いまの キャンプの黄色。 */
+:root{--paper:#fbf7f0;--ink:#2b2118;--mute:#8c7f70;--line:#d9cdbb;--white:#fff;
+  --theme:#3fae7a;--theme-soft:#dcf3e8;--now:#f2a516;--now-soft:#fde3a6;--ng:#d9483b;--r:14px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{overflow-x:hidden}
+html,body{margin:0;color:var(--ink)}
+body{font-family:"BIZ UDPGothic",sans-serif;font-size:16px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;min-height:100vh;background:var(--paper)}
+.k{font-family:"Klee One",serif;font-weight:600}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:2px solid var(--ink);border-radius:var(--r);background:var(--white);padding:8px 16px;
+  transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .18s ease;box-shadow:0 0 0 var(--ink)}
+button:hover{transform:translateY(-4px);box-shadow:0 5px 0 var(--ink)}
+button:active{transform:translateY(1px);box-shadow:0 0 0 var(--ink);transition-duration:.06s}
+button:disabled{opacity:.45;cursor:default}
+button:disabled:hover{transform:none;box-shadow:none}
+.dark{background:var(--ink);color:var(--paper)}
+.lion{display:block}
+.lion img{display:block;height:100%;width:auto}
+header.bar{display:flex;align-items:center;gap:16px;height:56px;padding:0 24px;background:rgba(251,247,240,.92);border-bottom:2px solid var(--line);position:relative;z-index:2}
+header.bar h1{margin:0;font-size:20px}
+header.bar .back{border:none;background:none;padding:8px 0;font-weight:700}
+header.bar .back:hover{transform:none;box-shadow:none}
+header.bar .sp{flex:1}
+header.bar .link{font-size:13px;border-radius:999px;padding:4px 16px;font-weight:700}
+main{max-width:1240px;margin:0 auto;padding:16px 24px}
+
+/* 原っぱの背景（森の地図と 山の地図）。絵の 空の 暗い かげは、絵そのものを 水色に ぬりかえて ある。
+   画面が 縦長でも 空が 足りるように、上は 同じ 水色で つなぐ。 */
+body.outdoor{background:#d1e7f5 url("common/img/bg-harappa.jpg") center bottom/cover no-repeat}
+/* 森の地図だけは、先生の「森の小道」の絵 */
+body.outdoor.forestbg{background:#a9d24f url("common/img/bg-mori.jpg") center/cover no-repeat}
+body.outdoor header.bar{background:rgba(251,247,240,.85)}
+
+/* 材料の かず */
+.mats{display:flex;gap:8px}
+.mat{display:flex;align-items:center;gap:4px;background:var(--white);border:2px solid var(--ink);border-radius:999px;padding:0 12px 0 4px;font-weight:700;font-size:20px}
+.mat img{height:32px;width:auto}
+.mat.bump{animation:bump .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
+.cost{display:flex;gap:4px;flex-wrap:wrap;font-size:13px;font-weight:700}
+.cost span{display:flex;align-items:center;gap:2px}
+.cost img{height:20px;width:auto}
+.cost .lack{color:var(--ng)}
+.toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:20;background:var(--white);border:2px solid var(--ink);border-radius:999px;padding:4px 16px 4px 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;animation:toast 1.8s ease forwards;pointer-events:none}
+.toast img{height:36px}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-8px)}}
+
+/* ---------- 森の地図 ---------- */
+.forest{position:relative;height:560px}
+.forest .spot{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:none;background:none;padding:0;box-shadow:none}
+.forest .spot:hover{transform:translate(-50%,-100%) translateY(-4px);box-shadow:none}
+.forest .spot .tag{background:var(--white);border:2px solid var(--ink);border-radius:999px;padding:0 16px;font-weight:700;font-size:16px;white-space:nowrap}
+.forest .mini{display:block;width:360px;pointer-events:none}
+.forest .mini .board{width:100%}
+.forest .mtn{height:200px;width:auto}
+/* まだ ひみつの 場所：先生の 島の絵を、うすく 見せる */
+.forest .isle{position:relative;display:block;width:150px}
+.forest .isle img{display:block;width:100%;height:auto;filter:grayscale(.85) brightness(1.05);opacity:.75}
+.forest .isle b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--white);border:2px solid var(--ink);display:grid;place-items:center;font-size:28px}
+.forest .spot:disabled{cursor:default;opacity:1}
+.forest .spot:disabled:hover{transform:translate(-50%,-100%)}
+.forest .guide{position:absolute;right:24px;top:24px;width:320px}
+
+/* らいおんの 会話（森・山・キャンプで つかう） */
+.talk{display:flex;flex-direction:column;gap:8px}
+.talk .row{display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:end;animation:rise .35s ease} /* 動きが 止まって いても 見えるように、both に しない */
+.talk .row.niji{grid-template-columns:1fr 56px}
+.talk .row.niji .lion{order:2}
+.talk .row .lion{height:64px}
+.talk .bub{background:var(--white);border:2px solid var(--ink);border-radius:18px 18px 18px 4px;padding:8px 16px;font-size:16px;line-height:1.6}
+.talk .row.niji .bub{border-radius:18px 18px 4px 18px;border-color:#7b5cff}
+.talk .row.hint .bub{border-color:var(--now)}
+.talk .ctl{display:flex;gap:8px;justify-content:flex-end}
+.talk .ctl button{font-size:13px;padding:4px 16px;border-radius:999px}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- がい数の森の 地図 ---------- */
+.mapwrap{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
+.map{width:100%;height:auto;display:block}
+.camp{cursor:pointer}
+.camp .pic{transition:transform .18s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:center bottom}
+.camp:hover .pic{transform:translateY(-4px) scale(1.08)}
+.camp.now .pic{animation:hop 1.2s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.camp .tag{transition:transform .18s}
+.camp:hover .tag{transform:translateY(-3px)}
+.camps{display:flex;flex-direction:column;gap:8px}
+.camps button{display:flex;align-items:center;gap:8px;text-align:left;padding:8px 16px}
+.num{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);font-weight:700;font-size:13px;flex:none;background:var(--white)}
+.done .num{background:var(--theme);color:var(--white)}
+.now .num{background:var(--now)}
+.title{display:flex;align-items:baseline;gap:16px;margin:0 0 8px}
+.title h2{margin:0;font-size:28px;text-shadow:0 0 6px #fff}
+.title span{color:var(--mute);text-shadow:0 0 6px #fff}
+
+/* ---------- キャンプの中 ---------- */
+.campv{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+.qcard{background:var(--white);border:2px solid var(--ink);border-radius:var(--r);padding:24px}
+.step{display:flex;gap:8px;align-items:center;color:var(--mute);font-size:13px;font-weight:700;margin-bottom:8px}
+.step i{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+.step i.ok{background:var(--theme)}
+.step i.cur{background:var(--now)}
+.qcard h3{margin:0 0 16px;font-size:28px;line-height:1.6}
+.bignum{display:flex;gap:8px;margin:8px 0 16px;flex-wrap:wrap}
+.bignum .d{display:flex;flex-direction:column;align-items:center;gap:4px}
+.bignum .d b,.bignum .d button{display:grid;place-items:center;width:56px;height:64px;border:2px solid var(--ink);border-radius:10px;font-size:36px;background:var(--white);padding:0;font-family:"Klee One",serif;font-weight:600}
+.bignum .d small{font-size:13px;color:var(--mute);min-height:1.5em;font-weight:700}
+.bignum .d.keep b{background:var(--theme-soft)}
+.bignum .d.look b{background:var(--now-soft);outline:3px solid var(--now);outline-offset:2px}
+.bignum .d.zero b{color:var(--mute);background:#efe8dc}
+.bignum .d.target button{outline:3px dashed var(--now);outline-offset:3px}
+.bignum .d.wrong button{background:#fbe1dd}
+.bignum .d.right button{background:var(--theme-soft)}
+.bignum .d .top{font-size:13px;color:var(--now);font-weight:700;min-height:1.5em}
+.bignum.explore .d button{width:44px;height:52px;font-size:28px}
+.bignum.explore .d.on button{background:var(--now-soft)}
+.ansrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ansrow input{font-family:"Klee One",serif;font-weight:600;font-size:28px;width:6.5em;padding:4px 16px;border:2px solid var(--ink);border-radius:var(--r);text-align:right;background:var(--white)}
+.ansrow input:focus{outline:3px solid var(--now);outline-offset:2px}
+.ansrow input.ok{background:var(--theme-soft)}
+.ansrow input.ng{background:#fbe1dd}
+.ansrow button{font-size:20px;font-weight:700;padding:8px 24px}
+.ansrow .lbl{font-size:20px;min-width:5em}
+.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.methods .ansrow{flex-direction:column;align-items:stretch;gap:8px}
+.methods .ansrow .lbl{min-width:0}
+.methods .ansrow input{width:100%}
+.tool{margin-top:16px;padding-top:16px;border-top:2px dashed var(--line)}
+.tool h4{margin:0 0 8px;font-size:13px;color:var(--mute);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tool h4 button{font-size:13px;padding:2px 12px;border-radius:999px}
+.nl{width:100%;height:auto;display:block;touch-action:none;cursor:pointer}
+.nlctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.nlctl .stepb{padding:4px 12px;font-size:16px}
+.nlctl .val{font-size:28px;min-width:4.5em;text-align:right}
+.found{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.found span{border:2px solid var(--theme);background:var(--theme-soft);border-radius:999px;padding:0 16px;font-size:20px}
+.side{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px}
+.side .lvl{display:flex;gap:4px;justify-content:center;align-items:center;font-size:13px;color:var(--mute)}
+.side .lvl i{width:24px;height:6px;border-radius:3px;background:var(--line)}
+.side .lvl i.on{background:var(--now)}
+.side .more{align-self:center;font-size:13px;border-radius:999px;padding:4px 16px}
+.arrowanim{stroke-dasharray:400;stroke-dashoffset:400;animation:drawline .9s ease forwards}
+@keyframes drawline{to{stroke-dashoffset:0}}
+
+/* ---------- キャンプ場 ---------- */
+.campsite{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+/* 長おししても 文字や 絵が 選ばれない（青く ならない）ように する */
+.campsite,.campsite *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.campsite img{-webkit-user-drag:none}
+/* キャンプ場の 地面：先生の「木のわくと 森の 原っぱ」の絵 */
+.board{position:relative;aspect-ratio:3/2;border-radius:var(--r);overflow:hidden;touch-action:none;
+  background:#b9df7e url("common/img/camp/ground-forest.jpg") center/100% 100% no-repeat}
+.board .it{position:absolute;transform:translate(-50%,-100%);cursor:grab;filter:drop-shadow(0 4px 0 rgba(43,33,24,.25));transition:transform .18s cubic-bezier(.3,1.6,.5,1);z-index:1}
+.board .it:hover{transform:translate(-50%,-100%) translateY(-4px) scale(1.04)}
+.board .it img{display:block;height:100%;width:auto;pointer-events:none}
+.board .it.new{animation:build .7s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes build{0%{transform:translate(-50%,-100%) scale(.2);opacity:0}70%{transform:translate(-50%,-100%) scale(1.12);opacity:1}100%{transform:translate(-50%,-100%)}}
+.board .it.sel{outline:4px solid var(--now);outline-offset:4px;border-radius:12px}
+.board .visit{position:absolute;display:block;height:22%;transform:translate(-50%,-100%);animation:hop2 1.4s ease-in-out infinite;z-index:2}
+.board .visit img{display:block;height:100%;width:auto}
+@keyframes hop2{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
+.board .spark{position:absolute;pointer-events:none;font-size:28px;animation:spark .9s ease-out forwards;z-index:3}
+@keyframes spark{0%{opacity:1;transform:translate(-50%,-50%) scale(.6)}100%{opacity:0;transform:translate(-50%,-160%) scale(1.3)}}
+.pop{position:absolute;z-index:4;background:var(--white);border:2px solid var(--ink);border-radius:var(--r);padding:8px;display:flex;flex-direction:column;gap:8px;min-width:180px;transform:translate(-50%,8px)}
+.pop button{font-size:13px;padding:4px 8px}
+.panel{display:flex;flex-direction:column;gap:8px}
+.panel h2{margin:0;font-size:20px}
+.shop{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shop button{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:center;text-align:left;padding:4px 8px}
+.shop button img{height:40px;width:auto;max-width:44px;object-fit:contain;justify-self:center}
+.shop .nm{font-weight:700;font-size:16px;line-height:1.3}
+.tray{display:flex;gap:8px;flex-wrap:wrap}
+.tray .ti{display:flex;flex-direction:column;align-items:center;gap:4px;width:88px;padding:8px;touch-action:none;border:2px solid var(--ink);border-radius:var(--r);background:var(--white);cursor:grab}
+.tray .ti img{height:44px;width:auto;pointer-events:none}
+.tray .ti span{font-size:13px;font-weight:700}
+.ghost{position:fixed;pointer-events:none;z-index:30;transform:translate(-50%,-100%);opacity:.85}
+.ghost img{height:96px;width:auto}
+.note{font-size:13px;color:var(--mute);margin:0}
+
+/* QR と おしらせの まど */
+.modal{position:fixed;inset:0;display:grid;place-items:center;background:rgba(251,247,240,.85);z-index:40}
+.modal .box{background:var(--white);border:2px solid var(--ink);border-radius:var(--r);padding:24px;max-width:520px;width:calc(100% - 32px);text-align:center;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.85)}100%{transform:none}}
+.modal .lions{display:flex;gap:16px;justify-content:center;height:120px}
+.modal .lions .lion{height:100%}
+.modal h2{font-size:28px;margin:8px 0}
+.modal p{font-size:16px;margin:0 0 16px}
+.modal .qr img{width:240px;height:240px;image-rendering:pixelated}
+.modal .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+@media (prefers-reduced-motion:reduce){.camp.now .pic,.board .it.new,.board .visit,.mat.bump,.board .spark,.talk .row,.modal .box,.toast,.arrowanim{animation:none}.arrowanim{stroke-dashoffset:0}button{transition:none}}
+@media (max-width:820px){
+  main{padding:16px}
+  .mapwrap,.campv,.campsite{grid-template-columns:1fr}
+  .side{position:static;order:-1}
+  .bignum .d b,.bignum .d button{width:44px;height:52px;font-size:28px}
+  .qcard{padding:16px}
+  .qcard h3{font-size:20px}
+  .ansrow input{font-size:20px;width:6em}
+  .methods{grid-template-columns:1fr;gap:8px}
+  header.bar{padding:0 16px;gap:8px}
+  header.bar h1{font-size:16px}
+  .mat{font-size:16px}
+  .mat img{height:24px}
+  .mats{gap:4px}
+  .mat{white-space:nowrap;padding:0 8px 0 2px}
+  header.bar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 16px}
+  header.bar h1,header.bar a,header.bar button{white-space:nowrap}
+  /* スマホでは 森の場所を 上から じゅんに ならべる（重ならないように） */
+  .forest{height:auto!important;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:24px 16px;padding-bottom:24px}
+  .forest .spot,.forest .spot:hover,.forest .spot:disabled:hover{position:static;transform:none}
+  .forest .guide{position:static;width:100%;padding:16px;order:-1}
+  .forest .mini{width:300px}
+  .forest .mtn{height:140px}
+  .forest .isle{width:96px}
+  .forest .isle b{width:40px;height:40px;font-size:20px}
+  .forest .spot .tag{font-size:13px;padding:0 8px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" class="modal" hidden></div>
+
+<script src="common/lions.js"></script>
+<!-- QRコード：qrcode-generator（Kazuhiko Arase さん、MIT ライセンス） -->
+<script src="common/qrcode.min.js"></script>
+<script>
+/* ================= 問題（先生チェックは まだ） ================= */
+const PLACES = ["一", "十", "百", "千", "一万", "十万"];
+const MNAME = { half: "四捨五入", up: "切り上げ", down: "切り捨て" };
+const MTO = { half: "四捨五入すると", up: "切り上げると", down: "切り捨てると" };
+const CAMPS = [
+  { name: "位の なまえ", mat: "donguri", qs: [{ n: 58372, p: 3 }, { n: 64915, p: 4 }, { n: 37208, p: 2 }, { n: 91546, p: 1 }, { n: 250813, p: 5 }, { n: 473062, p: 4 }] },
+  { name: "四捨五入", mat: "donguri", qs: [{ n: 36482, u: 10000 }, { n: 74915, u: 10000 }, { n: 25061, u: 10000 }, { n: 48351, u: 1000 }, { n: 62790, u: 1000 }, { n: 17509, u: 1000 }] },
+  { name: "切り上げ・切り捨て", mat: "maki", qs: [{ n: 43200 }, { n: 68751 }, { n: 85000 }, { n: 50000 }] },
+  { name: "数直線で ためす", mat: "maki", qs: [{ m: "half", T: 90000 }, { m: "up", T: 70000 }, { m: "down", T: 30000 }, { m: "half", T: 50000 }] },
+  { name: "はんいを 見つける", mat: "tane", qs: [{ m: "up", T: 90000 }, { m: "down", T: 90000 }, { m: "half", T: 90000 }, { m: "up", T: 7000, u: 1000 }, { m: "half", T: 3000, u: 1000 }, { m: "down", T: 600, u: 100 }, { m: "up", T: 400, u: 100 }] },
+];
+const FIND = 2; // キャンプ④で 見つける 数
+// キャンプに 入ったときの らいおんの かけあい
+const INTRO = [
+  [["hana", "happy", "キャンプ①へ ようこそ！"], ["niji", "normal", "大きな 数の 数字には、右から 一・十・百・千・一万…と 位の 名前が ついて いるんだ。"], ["hana", "idea", "下の 「さわって しらべよう」の 数字を おすと、位の 名前が わかるよ。ためしてみて！"]],
+  [["niji", "normal", "四捨五入は、1つ 下の 位の 数字を 見て きめるよ。"], ["hana", "idea", "4までは そのまま、5からは 上がる！"], ["niji", "normal", "下の 数直線の ● を ゆびで うごかして、たしかめてみよう。"]],
+  [["hana", "happy", "同じ 数でも、やり方で がい数が かわるんだって！"], ["niji", "normal", "切り捨ては 下へ、切り上げは 上へ、四捨五入は 近いほうへ 行くよ。"], ["hana", "idea", "下の ボタンを おすと、矢印で 見せて くれるよ。"]],
+  [["niji", "normal", "数直線の ▲を ゆびで うごかしてみよう。"], ["hana", "happy", "「この 数で ためす」を おすと、ぼくたちが すぐ 答えを 言うよ。"]],
+  [["hana", "happy", "いよいよ 森の おく！"], ["niji", "normal", "がい数に すると その数に なる、いちばん 小さい 数と いちばん 大きい 数を さがすんだ。"], ["hana", "idea", "こまったら、いつでも 下の 数直線を さわってね。"]],
+];
+
+/* ================= 材料と 置けるもの ================= */
+const MATS = [
+  { key: "donguri", name: "どんぐり", img: "common/img/camp/mat-donguri.png" },
+  { key: "maki", name: "まき", img: "common/img/camp/mat-maki.png" },
+  { key: "tane", name: "花のたね", img: "common/img/camp/mat-tane.png" },
+];
+const ITEMS = [
+  { key: "tent", name: "テント", h: 30, stages: [["tent-1", { donguri: 2 }], ["tent-2", { donguri: 4, maki: 2 }], ["tent-3", { donguri: 6, maki: 4, tane: 1 }]] },
+  { key: "fire", name: "たき火", h: 20, stages: [["fire-1", { maki: 2 }], ["fire-2", { maki: 5 }]] },
+  { key: "seat", name: "いす", h: 14, stages: [["seat-1", { maki: 2 }], ["seat-2", { maki: 4, donguri: 2 }]] },
+  { key: "flower", name: "花だん", h: 16, stages: [["flower-1", { tane: 1 }], ["flower-2", { tane: 2 }], ["flower-3", { tane: 3, donguri: 2 }]] },
+  { key: "hammock", name: "ハンモック", h: 20, stages: [["hammock-1", { maki: 3, donguri: 3 }]] },
+  { key: "lantern", name: "ランタン", h: 18, stages: [["lantern-1", { maki: 2, tane: 1 }]] },
+  { key: "house", name: "らいおんの家", h: 34, stages: [["house-1", { maki: 6, donguri: 4 }], ["house-2", { maki: 8, donguri: 6, tane: 2 }]] },
+];
+const campImg = (n) => `common/img/camp/${n}.png`;
+const matOf = (k) => MATS.find((m) => m.key === k);
+const itemOf = (k) => ITEMS.find((i) => i.key === k);
+
+/* ================= 計算 ================= */
+function rnd(n, m, u) { const r = ((n % u) + u) % u, base = n - r; if (m === "up") return r ? base + u : n; if (m === "down") return base; return r >= u / 2 ? base + u : base; }
+function range(m, T, u) { if (m === "up") return [T - u + 1, T]; if (m === "down") return [T, T + u - 1]; return [T - u / 2, T + u / 2 - 1]; }
+const exp = (u) => String(u).length - 1;
+const toPlace = (u) => PLACES[exp(u)];
+const lookPlace = (u) => PLACES[exp(u) - 1];
+const num = (s) => { s = String(s || "").replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[^\d]/g, ""); return s ? parseInt(s, 10) : null; };
+
+/* ================= ほぞん（この端末だけ。べつの端末へは QR） ================= */
+const KEY = "sansu-mori-v1";
+function blank() { return { cleared: [false, false, false, false, false], mats: { donguri: 0, maki: 0, tane: 0 }, lv: {}, pos: {} }; }
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.cleared)) return Object.assign(blank(), s); } catch (e) {}
+  const b = blank();
+  // 前の 算数マウンテンで のぼった キャンプを ひきつぐ
+  try { const old = JSON.parse(localStorage.getItem("sansu-mountain-v1")); if (old && Array.isArray(old.cleared)) b.cleared = old.cleared; } catch (e) {}
+  return b;
+}
+let prog = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(prog)); } catch (e) {} }
+const nowCamp = () => { const i = prog.cleared.indexOf(false); return i < 0 ? 4 : i; };
+const stateOf = (i) => prog.cleared[i] ? "done" : i === nowCamp() ? "now" : "todo";
+// QR に 入れる 中身：続きの データだけ（名前などは 入れない）
+function packSave() { return btoa(unescape(encodeURIComponent(JSON.stringify({ c: prog.cleared.map((x) => x ? 1 : 0).join(""), m: [prog.mats.donguri, prog.mats.maki, prog.mats.tane], l: prog.lv, p: prog.pos })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function unpackSave(s) {
+  const o = JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))));
+  return { cleared: o.c.split("").map((x) => x === "1"), mats: { donguri: o.m[0] | 0, maki: o.m[1] | 0, tane: o.m[2] | 0 }, lv: o.l || {}, pos: o.p || {} };
+}
+
+/* ================= 画面の じょうたい ================= */
+let view = "forest", ci = 0, qi = 0, miss = 0, solved = false, last = null, X = {}, intro = -1, campSel = null, justBuilt = null, campSay = null;
+const $ = (id) => document.getElementById(id);
+const L = (k, m) => `<span class="lion">${Lions.svg(k, m)}</span>`;
+const go = (v) => { view = v; render(); window.scrollTo(0, 0); };
+function startCamp(i) { view = "camp"; ci = i; qi = 0; newQ(); intro = 0; render(); window.scrollTo(0, 0); }
+function newQ() { miss = 0; solved = false; last = null; X = {}; nl = null; mini = null; }
+function matsHTML(bump) { return `<div class="mats" id="mats">${MATS.map((m) => `<span class="mat ${bump === m.key ? "bump" : ""}" title="${m.name}"><img src="${m.img}" alt="${m.name}">${prog.mats[m.key]}</span>`).join("")}</div>`; }
+function talkHTML(lines, ctl) {
+  return `<div class="talk">${lines.map(([who, mood, t, cls]) => `<div class="row ${who} ${cls || ""}">${L(who, mood)}<div class="bub k">${t}</div></div>`).join("")}${ctl || ""}</div>`;
+}
+function gain(key, n) {
+  prog.mats[key] += n; save();
+  const m = matOf(key), t = document.createElement("div"); t.className = "toast"; t.innerHTML = `<img src="${m.img}" alt="">${m.name} ＋${n}`;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 1900);
+  const box = $("mats"); if (box) box.outerHTML = matsHTML(key);
+}
+
+/* ================= 森の地図 ================= */
+function vForest() {
+  const done = prog.cleared.filter(Boolean).length, any = Object.keys(prog.lv).length;
+  const msg = !any && !done ? [["hana", "happy", "算数の森へ ようこそ！"], ["niji", "normal", "がい数の 森で 問題を といて、材料を もって かえろう。キャンプ場が すこしずつ 大きく なるよ。"]]
+    : [["hana", "happy", done === 5 ? "がい数の 森の おくまで 行ったね！ すごい！" : `がい数の 森は キャンプ ${done}／5。ゆっくりで いいよ。`], ["niji", "normal", any ? "キャンプ場も にぎやかに なってきたね。" : "材料が たまったら、キャンプ場で ものを つくってみよう。"]];
+  return `<header class="bar"><h1 class="k">算数の森</h1><span class="sp"></span>${matsHTML()}
+      <button class="link" onclick="location.href='https://sunny-lotus.github.io/manabi-portal/'">まなびひろばへ</button></header>
+    <div class="forest" id="forest">
+      <button class="spot" style="left:27%;top:96%" onclick="go('site')"><span class="mini">${boardHTML(true)}</span><span class="tag k">きみの キャンプ場</span></button>
+      <button class="spot" style="left:76%;top:70%" onclick="go('map')"><img class="mtn" src="common/img/gaisu-mori.png" alt=""><span class="tag k">がい数の 森（キャンプ ${done}／5）</span></button>
+      ${[["spot-ike", 13, 56], ["spot-hana", 33, 32], ["spot-aki", 62, 30]].map(([f, x, y]) =>
+        `<button class="spot" style="left:${x}%;top:${y}%" disabled><span class="isle"><img src="common/img/${f}.png" alt=""><b>？</b></span><span class="tag k">まだ ひみつの 場所</span></button>`).join("")}
+      <div class="guide">${talkHTML(msg)}</div>
+    </div>`;
+}
+function fitForest() { const f = $("forest"); if (f) f.style.height = Math.max(480, window.innerHeight - f.getBoundingClientRect().top - window.scrollY) + "px"; }
+window.addEventListener("resize", fitForest);
+
+/* ================= がい数の森の 地図 ================= */
+const CAMP_IMG = { todo: "common/img/camp-mada.png", now: "common/img/camp-ima.png", done: "common/img/camp-dekita.png" };
+function campSVG(i, x, y, left) {
+  const label = (i === 4 ? "森の おく：" : "") + CAMPS[i].name, s = stateOf(i);
+  const tw = 32 + [...label].length * 18, iw = 64, ih = 57, tx = left ? x - iw / 2 - 8 - tw : x + iw / 2 + 8;
+  return `<g class="camp ${s}" onclick="startCamp(${i})" role="button" tabindex="0" aria-label="キャンプ${i + 1} ${CAMPS[i].name}">
+    <image class="pic" href="${CAMP_IMG[s]}" x="${x - iw / 2}" y="${y - ih}" width="${iw}" height="${ih}"/>
+    <circle cx="${x - iw / 2 + 4}" cy="${y - ih + 4}" r="11" fill="#fff" stroke="#2b2118" stroke-width="2"/>
+    <text x="${x - iw / 2 + 4}" y="${y - ih + 9}" text-anchor="middle" font-size="13" font-weight="700" fill="#2b2118" font-family="BIZ UDPGothic">${i + 1}</text>
+    <g class="tag"><rect x="${tx}" y="${y - 46}" width="${tw}" height="36" rx="10" fill="#fff" stroke="#2b2118" stroke-width="2"/>
+    <text x="${tx + 16}" y="${y - 22}" font-size="18" fill="#2b2118" font-family="Klee One" font-weight="600">${label}</text></g></g>`;
+}
+function vMap() {
+  // 森の 広場の 絵の 上を、手前から おくへ すすむ
+  const pts = [[300, 486], [540, 452], [320, 392], [550, 334], [432, 268]];
+  const trail = "M250 540 " + pts.map(([x, y]) => `L${x} ${y - 4}`).join(" ");
+  const done = prog.cleared.filter(Boolean).length;
+  const msg = done === 5 ? [["hana", "happy", "森の おくに ついたね！ 何回でも 来て いいよ。"]]
+    : [["hana", "happy", done ? `キャンプ${done}まで 来たね。つぎは キャンプ${nowCamp() + 1}。` : "がい数の 森へ ようこそ！"], ["niji", "normal", "キャンプで 何回でも 休んで いいよ。まちがえても、ぼくたちが すぐ 横に いるからね。"]];
+  return `<header class="bar"><button class="back" onclick="go('forest')">◀ 森へ</button><h1 class="k">がい数の 森</h1><span class="sp"></span>${matsHTML()}</header>
+    <main><div class="title"><h2 class="k">がい数の 森</h2><span>キャンプ ${done}／5</span></div>
+    <div class="mapwrap">
+      <svg class="map" viewBox="0 0 860 560" aria-label="がい数の 森の 地図">
+        <image href="common/img/gaisu-mori.png" x="120" y="-50" width="620" height="620"/>
+        <path d="${trail}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+        <path d="${trail}" fill="none" stroke="#2b2118" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map(([x, y], i) => campSVG(i, x, y, [true, false, true, false, false][i])).join("")}
+      </svg>
+      <aside class="guide">${talkHTML(msg)}
+        <div class="camps" style="margin-top:16px">${CAMPS.map((c, i) => `<button class="${stateOf(i)}" onclick="startCamp(${i})"><span class="num">${i + 1}</span><span class="k">${c.name}</span></button>`).join("")}</div>
+      </aside></div></main>`;
+}
+
+/* ================= 数字の ならび ================= */
+function digitsHTML(n, mode, look) {
+  const ds = String(n).split(""), L0 = ds.length;
+  return `<div class="bignum">${ds.map((d, i) => {
+    const cls = mode === 0 ? "" : i < look ? "keep" : i === look ? "look" : mode === 2 ? "zero" : "";
+    return `<span class="d ${cls}"><b>${d}</b><small>${mode ? PLACES[L0 - 1 - i] : ""}</small></span>`;
+  }).join("")}</div>`;
+}
+
+/* ================= 数直線（ゆびで うごかせる） ================= */
+let nl = null;
+function nlInit(m, T, u, start) { nl = { m, T, u, min: T - 1.5 * u, max: T + 1.5 * u, v: start, tried: [], zone: false, mark: false }; }
+const NX = (n) => 20 + (n - nl.min) / (nl.max - nl.min) * 620;
+function nlSVG() {
+  const { m, T, u, min, max, v } = nl;
+  let s = `<rect x="0" y="0" width="660" height="104" fill="transparent"/>`;
+  if (nl.zone) { const [a, b] = range(m, T, u); s += `<rect x="${NX(a)}" y="36" width="${NX(b) - NX(a)}" height="40" rx="6" fill="#dcf3e8" stroke="#3fae7a" stroke-width="2"/>`; }
+  if (nl.mark) s += `<path d="M${NX(T)} 6 v20" stroke="#f2a516" stroke-width="4" stroke-linecap="round"/><text x="${NX(T)}" y="6" text-anchor="middle" font-size="13" font-weight="700" fill="#f2a516" font-family="BIZ UDPGothic">${T}の 近く</text>`;
+  s += `<line x1="8" y1="56" x2="652" y2="56" stroke="#2b2118" stroke-width="3"/>`;
+  for (let n = min; n <= max; n += u / 10) {
+    const big = n % u === 0, h = big ? 14 : n % (u / 2) === 0 ? 10 : 5;
+    s += `<line x1="${NX(n)}" y1="${56 - h}" x2="${NX(n)}" y2="${56 + h}" stroke="#2b2118" stroke-width="${big ? 3 : 1.5}"/>`;
+    if (big) s += `<text x="${NX(n)}" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#2b2118" font-family="Klee One">${n}</text>`;
+  }
+  nl.tried.forEach((t) => { s += `<circle cx="${NX(t)}" cy="56" r="6" fill="${rnd(t, m, u) === T ? "#3fae7a" : "#b9ad9a"}" stroke="#fff" stroke-width="1.5"/>`; });
+  const r = rnd(v, m, u), ok = r === T;
+  if (r !== v && r >= min && r <= max) s += `<path d="M${NX(v)} 44 Q${(NX(v) + NX(r)) / 2} 4 ${NX(r)} 44" fill="none" stroke="${ok ? "#3fae7a" : "#d9483b"}" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+  s += `<path d="M${NX(v)} 60 l-11 18 h22z" fill="${ok ? "#3fae7a" : "#d9483b"}" stroke="#2b2118" stroke-width="1.5"/>`;
+  return `<svg class="nl" id="nlsvg" viewBox="0 0 660 104" aria-label="数直線。ゆびで ▲を うごかせる">${s}</svg>`;
+}
+function nlHTML(tryLabel) {
+  const steps = [nl.u / 10, nl.u / 100, 1].filter((d, i, a) => d >= 1 && a.indexOf(d) === i);
+  return `<div id="nlbox">${nlSVG()}
+    <div class="nlctl">${steps.map((d) => `<button class="stepb" onclick="nlSet(nl.v-${d},true)">−${d}</button>`).join("")}
+      <span class="val k" id="nlval">${nl.v}</span>
+      ${steps.slice().reverse().map((d) => `<button class="stepb" onclick="nlSet(nl.v+${d},true)">+${d}</button>`).join("")}
+      ${tryLabel ? `<button class="dark" onclick="nlTry()">${tryLabel}</button>` : ""}
+      <span class="note" id="nlres">${MTO[nl.m]} ${rnd(nl.v, nl.m, nl.u)}</span></div></div>`;
+}
+function nlSet(v, record) {
+  nl.v = Math.max(nl.min, Math.min(nl.max, Math.round(v)));
+  if (record && ci === 4) nl.tried.push(nl.v);
+  const svg = $("nlsvg"); if (!svg) return;
+  svg.outerHTML = nlSVG(); $("nlval").textContent = nl.v; $("nlres").textContent = `${MTO[nl.m]} ${rnd(nl.v, nl.m, nl.u)}`;
+}
+// 数直線を ゆびで さわって うごかす
+let nlDrag = false;
+function svgX(svg, e, w) { const r = svg.getBoundingClientRect(); return (e.clientX - r.left) / r.width * w; }
+document.addEventListener("pointerdown", (e) => {
+  const svg = e.target.closest && e.target.closest("#nlsvg"); if (svg && nl) { nlDrag = true; e.preventDefault(); moveNL(e); }
+  const ms = e.target.closest && e.target.closest("#minisvg"); if (ms && mini) { miniDrag = true; e.preventDefault(); moveMini(e); }
+});
+document.addEventListener("pointermove", (e) => { if (nlDrag) moveNL(e); if (miniDrag) moveMini(e); });
+document.addEventListener("pointerup", () => { if (nlDrag && ci === 4 && nl) { nl.tried.push(nl.v); nlSet(nl.v); } nlDrag = false; miniDrag = false; });
+function moveNL(e) { const svg = $("nlsvg"); if (!svg) return; const x = svgX(svg, e, 660), step = nl.u / 100; nlSet(Math.round((nl.min + (x - 20) / 620 * (nl.max - nl.min)) / step) * step); }
+
+/* ================= キャンプの中（共通のわく） ================= */
+function vCamp() {
+  const c = CAMPS[ci], q = c.qs[qi], body = [camp1, camp2, camp3, camp4, camp5][ci](q);
+  return `<header class="bar"><button class="back" onclick="go('map')">◀ がい数の 森</button><h1 class="k">キャンプ${ci + 1}　${c.name}</h1><span class="sp"></span>${matsHTML()}</header>
+  <main><div class="campv">
+    <section class="qcard">
+      <div class="step">${c.qs.map((_, i) => `<i class="${i < qi || (i === qi && solved) ? "ok" : i === qi ? "cur" : ""}"></i>`).join("")} もんだい ${qi + 1}／${c.qs.length}</div>
+      ${body.card}
+      ${body.tool ? `<div class="tool">${body.tool}</div>` : ""}
+    </section>
+    <aside class="side" id="side">${sideHTML(body)}</aside>
+  </div></main>`;
+}
+// 右がわ：はじめは かけあいの しょうかい、そのあとは 問題に あわせて 2ひきが 話す
+function sideHTML(body) {
+  if (intro >= 0 && !solved) {
+    const lines = INTRO[ci].slice(0, intro + 1).slice(-2), more = intro < INTRO[ci].length - 1;
+    return talkHTML(lines, `<div class="ctl"><button onclick="intro=-1;render()">とばす</button><button class="dark" onclick="${more ? "intro++" : "intro=-1"};render()">${more ? "つぎへ ▶" : "はじめる ▶"}</button></div>`);
+  }
+  const lvl = solved ? 0 : Math.min(miss, 3);
+  return `${talkHTML(body.say)}
+    ${solved ? `<button class="dark" onclick="nextQ()">${qi < CAMPS[ci].qs.length - 1 ? "つぎの もんだい ▶" : "キャンプ クリア！"}</button>`
+      : `<div class="lvl">ヒント ${[1, 2, 3].map((i) => `<i class="${lvl >= i ? "on" : ""}"></i>`).join("")}</div>
+         ${lvl < 3 ? `<button class="more" onclick="miss++;render()">もっと ヒント</button>` : ""}`}`;
+}
+function wrong(v) { miss++; last = v; render(); }
+function nextQ() {
+  // 1問 おわるごとに 材料を もらえる（まちがえても、ヒントを つかっても もらえる）
+  gain(CAMPS[ci].mat, 1);
+  if (qi < CAMPS[ci].qs.length - 1) { qi++; newQ(); render(); return; }
+  const first = !prog.cleared[ci];
+  prog.cleared[ci] = true; save();
+  const bonus = CAMPS[ci].mat; // あとで わたすので、いまの キャンプの 材料を おぼえておく
+  if (first) setTimeout(() => gain(bonus, 2), 900);
+  const top = ci === 4;
+  showModal(`<div class="lions">${L("hana", "happy")}${L("niji", "normal")}</div>
+    <h2 class="k">${top ? "森の おくに ついた！" : `キャンプ${ci + 1} クリア！`}</h2>
+    <p class="k">${top ? "がい数の 森を さいごまで すすんだね。すごいよ！" : first ? "テントが 緑に なったよ。おまけの 材料も もらえるよ。" : "もう一度 クリアできたね。"}</p>
+    <div class="row"><button onclick="closeModal();go('map')">がい数の 森へ</button><button class="dark" onclick="closeModal();go('site')">キャンプ場へ</button></div>`);
+}
+const say = (who, mood, t, hint) => [who, mood, t, hint ? "hint" : ""];
+
+/* ---------- キャンプ①：位の なまえ ---------- */
+function camp1(q) {
+  const ds = String(q.n).split(""), Ln = ds.length, target = Ln - 1 - q.p, lvl = Math.min(miss, 3);
+  const showNames = solved || lvl >= 2;
+  const card = `<h3 class="k">${PLACES[q.p]}の位の 数字を タップしよう。</h3>
+    <div class="bignum">${ds.map((d, i) => {
+      const cls = solved && i === target ? "right" : X.wrong === i ? "wrong" : lvl >= 3 && i === target ? "target" : "";
+      return `<span class="d ${cls}"><span class="top">${showNames ? PLACES[Ln - 1 - i] + "の位" : ""}</span><button ${solved ? "disabled" : ""} onclick="c1Tap(${i})">${d}</button></span>`;
+    }).join("")}</div>`;
+  // さわって しらべよう：おしても 答えに ならない。位の 名前を 教えて くれる
+  const tool = `<h4>さわって しらべよう（ここは おしても 答えに ならないよ）</h4>
+    <div class="bignum explore">${ds.map((d, i) => `<span class="d ${X.look === i ? "on" : ""}"><button onclick="X.look=${i};X.lookSay=true;render()">${d}</button><small>${X.look === i ? PLACES[Ln - 1 - i] + "の位" : ""}</small></span>`).join("")}</div>`;
+  let s;
+  if (solved) s = [say("hana", "happy", `せいかい！ ${PLACES[q.p]}の位は 「${ds[target]}」だね。`)];
+  else if (X.lookSay && X.look != null && lvl === 0) s = [say("niji", "normal", `「${ds[X.look]}」は ${PLACES[Ln - 1 - X.look]}の位だよ。右から ${Ln - X.look}つ目。`), say("hana", "idea", `さがして いるのは ${PLACES[q.p]}の位だね。`)];
+  else if (lvl === 0) s = [say("hana", "normal", "上の 数字から、えらんで タップしてね。"), say("niji", "normal", "わからなかったら、下で さわって しらべて いいよ。")];
+  else if (lvl === 1) s = [say("hana", "think", "おしい！ どこを 数えれば いいかな？", 1), say("niji", "normal", last === null ? `${PLACES[q.p]}の位は、右から ${q.p + 1}つ目だよ。` : `そこは ${PLACES[Ln - 1 - last]}の位。${PLACES[q.p]}の位は、右から ${q.p + 1}つ目だよ。`, 1)];
+  else if (lvl === 2) s = [say("niji", "idea", "数字の 上に、位の 名前を 出したよ。", 1), say("hana", "normal", `「${PLACES[q.p]}の位」って 書いて ある ところを さがしてみて！`, 1)];
+  else s = [say("niji", "idea", `いっしょに 右から 数えよう。${PLACES.slice(0, q.p + 1).map((p) => p).join("、")}… ${PLACES[q.p]}の位は 光って いる ところだよ。`, 1), say("hana", "happy", "できる できる！", 1)];
+  return { card, tool, say: s };
+}
+function c1Tap(i) { const q = CAMPS[0].qs[qi], target = String(q.n).length - 1 - q.p; X.lookSay = false; if (i === target) { solved = true; X.wrong = null; render(); } else { X.wrong = i; wrong(i); } }
+
+/* ---------- キャンプ②：四捨五入 ---------- */
+let mini = null, miniDrag = false;
+function camp2(q) {
+  const u = q.u, r = rnd(q.n, "half", u), Ln = String(q.n).length, look = Ln - exp(u), d = +String(q.n)[look], lvl = Math.min(miss, 3);
+  if (!mini) mini = { lo: Math.floor(q.n / u) * u, u, v: q.n, m: ["half"] };
+  const card = `<h3 class="k">${q.n} を 四捨五入して、${toPlace(u)}の位までの がい数に しよう。</h3>
+    ${digitsHTML(q.n, solved || lvl >= 3 ? 2 : lvl >= 2 ? 1 : 0, look)}
+    <div class="ansrow">${solved ? `<span class="k" style="font-size:28px">${r}</span>`
+      : `<input id="a1" inputmode="numeric" autocomplete="off" aria-label="こたえ" onkeydown="if(event.key==='Enter')c2Check()"><button class="dark" onclick="c2Check()">こたえる</button>`}</div>`;
+  const tool = `<h4>さわって たしかめる：● を ゆびで うごかしてみよう <button onclick="mini.v=${q.n};drawMini()">${q.n}に もどす</button></h4>${miniHTML()}`;
+  let s;
+  if (solved) s = [say("hana", "happy", `${r}、せいかい！`), say("niji", "normal", `${lookPlace(u)}の位を ちゃんと 見られたね。`)];
+  else if (lvl === 0) s = [say("hana", "normal", "まず 答えを 入れて みよう。まちがえても だいじょうぶ！"), say("niji", "normal", "下の 数直線で、どっちに 近いか たしかめても いいよ。")];
+  else if (lvl === 1) s = [say("hana", "think", "おしい！ どの 数字を 見れば いいかな？", 1), say("niji", "normal", c2Hint(q, last), 1)];
+  else if (lvl === 2) s = [say("niji", "idea", `光って いる ${lookPlace(u)}の位を 見てね。「${d}」だよ。`, 1), say("hana", "normal", `${d}は 4までかな？ 5からかな？ 下の ● が どっちがわに あるか 見てみて！`, 1)];
+  else s = [say("niji", "idea", `いっしょに やろう。${toPlace(u)}の位は「${String(q.n)[look - 1]}」。${lookPlace(u)}の位は「${d}」で、${d >= 5 ? "5から だから 上がる" : "4まで だから そのまま"}。`, 1), say("hana", "happy", `だから 答えは ${toPlace(u)}の位から 下を 0に して… あとは きみが 入れてみて！`, 1)];
+  return { card, tool, say: s };
+}
+function c2Hint(q, a) {
+  const u = q.u, r = rnd(q.n, "half", u), d = Math.floor(q.n / (u / 10)) % 10;
+  if (a === null) return `まずは ${lookPlace(u)}の位の 数字を さがそう。`;
+  if (a === Math.floor(q.n / (u / 10)) * (u / 10) || a === rnd(q.n, "half", u / 10)) return `${toPlace(u)}の位までの がい数だから、${lookPlace(u)}の位から 下は ぜんぶ 0に なるよ。`;
+  if (a === r - u || a === r + u) return `${lookPlace(u)}の位の 数字は 「${d}」だね。${d >= 5 ? "5より 大きいときは どうするんだっけ？" : "4より 小さいときは どうするんだっけ？"}`;
+  if (a % u !== 0) return `${toPlace(u)}の位までの がい数は、さいごが ${"0".repeat(exp(u))} で おわる 数に なるよ。`;
+  return `${lookPlace(u)}の位の 数字を 見ると、上げるか そのままか わかるよ。`;
+}
+function c2Check() { const q = CAMPS[1].qs[qi], v = num($("a1").value); if (v === null) return; if (v === rnd(q.n, "half", q.u)) { solved = true; render(); } else wrong(v); }
+
+// 下と上の キリのいい数の あいだの 小さな数直線。● を ゆびで うごかせる。
+const MX = (v) => 40 + (v - mini.lo) / mini.u * 580;
+function miniSVG() {
+  const { lo, u, v, m } = mini, hi = lo + u;
+  let s = `<rect x="0" y="0" width="660" height="116" fill="transparent"/>`;
+  if (m.includes("half")) s += `<rect x="${MX(lo + u / 2)}" y="34" width="${MX(hi) - MX(lo + u / 2)}" height="24" fill="#fde3a6"/>`;
+  s += `<line x1="24" y1="46" x2="636" y2="46" stroke="#2b2118" stroke-width="3"/>`;
+  for (let x = lo; x <= hi; x += u / 10) { const big = x === lo || x === hi, mid = x === lo + u / 2;
+    s += `<line x1="${MX(x)}" y1="${46 - (big ? 14 : mid ? 11 : 5)}" x2="${MX(x)}" y2="${46 + (big ? 14 : mid ? 11 : 5)}" stroke="#2b2118" stroke-width="${big || mid ? 3 : 1.5}"/>`;
+    if (big || mid) s += `<text x="${MX(x)}" y="82" text-anchor="middle" font-size="16" font-weight="700" fill="#2b2118" font-family="Klee One">${x}</text>`; }
+  if (m.includes("half")) {
+    s += `<text x="${MX(lo + u / 4)}" y="104" text-anchor="middle" font-size="13" fill="#8c7f70" font-family="BIZ UDPGothic">ここは 下がる</text>`;
+    s += `<text x="${MX(lo + u * 3 / 4)}" y="104" text-anchor="middle" font-size="13" fill="#8c7f70" font-family="BIZ UDPGothic">ここは 上がる</text>`;
+    const r = rnd(v, "half", u);
+    s += `<path d="M${MX(v)} 34 Q${(MX(v) + MX(r)) / 2} 4 ${MX(r)} 34" fill="none" stroke="#2b2118" stroke-width="2" stroke-dasharray="5 5"/>`;
+  }
+  // キャンプ③：ボタンを おすと 矢印が のびる
+  const show = (X.anim || []);
+  const col = { down: "#2e93dd", up: "#d9483b", half: "#3fae7a" }, lab = { down: "切り捨て", up: "切り上げ", half: "四捨五入" };
+  show.forEach((k, i) => { const r = rnd(v, k, u), y = 30 - i * 0; const peak = 4 + i * 0;
+    s += `<path class="arrowanim" d="M${MX(v)} 46 Q${(MX(v) + MX(r)) / 2} ${k === "down" ? 104 : -8} ${MX(r)} 46" fill="none" stroke="${col[k]}" stroke-width="3"/>`;
+    s += `<text x="${MX(r)}" y="${k === "down" ? 112 : 24}" text-anchor="${r === lo ? "start" : "end"}" font-size="13" font-weight="700" fill="${col[k]}" font-family="BIZ UDPGothic">${lab[k]} → ${r}</text>`; });
+  s += `<circle cx="${MX(v)}" cy="46" r="10" fill="#f2a516" stroke="#2b2118" stroke-width="2"/>`;
+  s += `<text x="${MX(v)}" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#2b2118" font-family="BIZ UDPGothic">${v}</text>`;
+  return `<svg class="nl" id="minisvg" viewBox="0 0 660 116" aria-label="数直線。ゆびで ● を うごかせる">${s}</svg>`;
+}
+const miniHTML = () => `<div id="minibox">${miniSVG()}</div>`;
+function drawMini() { const b = $("minibox"); if (b) b.innerHTML = miniSVG(); }
+function moveMini(e) { const svg = $("minisvg"); if (!svg) return; const x = svgX(svg, e, 660), step = mini.u / 100;
+  mini.v = Math.max(mini.lo, Math.min(mini.lo + mini.u, Math.round((mini.lo + (x - 40) / 580 * mini.u) / step) * step)); drawMini(); }
+
+/* ---------- キャンプ③：切り上げ・切り捨て ---------- */
+const C3M = ["half", "up", "down"];
+function camp3(q) {
+  const u = 10000, lvl = Math.min(miss, 3), Ln = String(q.n).length, look = Ln - exp(u);
+  X.ok = X.ok || {};
+  if (!mini) mini = { lo: Math.floor(q.n / u) * u, u, v: q.n, m: [] };
+  const row = (m) => { const a = rnd(q.n, m, u), ok = X.ok[m];
+    return `<div class="ansrow"><span class="lbl k">${MNAME[m]}</span>${ok || solved ? `<input value="${a}" class="ok" disabled aria-label="${MNAME[m]}">`
+      : `<input id="c3-${m}" class="${X.ng && X.ng.includes(m) ? "ng" : ""}" inputmode="numeric" autocomplete="off" aria-label="${MNAME[m]}" value="${X.val && X.val[m] != null ? X.val[m] : ""}" onkeydown="if(event.key==='Enter')c3Check()">`}</div>`; };
+  const card = `<h3 class="k">${q.n} を、3つの やり方で 一万の位までの がい数に しよう。</h3>
+    ${digitsHTML(q.n, lvl >= 2 || solved ? (lvl >= 3 || solved ? 2 : 1) : 0, look)}
+    <div class="methods">${C3M.map(row).join("")}</div>
+    ${solved ? "" : `<div class="ansrow"><button class="dark" onclick="c3Check()">こたえる</button></div>`}`;
+  const tool = `<h4>矢印で 見る：${C3M.map((m) => `<button onclick="showArrow('${m}')">${MNAME[m]}</button>`).join("")}<button onclick="X.anim=[];drawMini()">けす</button></h4>${miniHTML()}`;
+  const firstNg = X.ng && X.ng[0], rest = q.n % u, d = Math.floor(q.n / 1000) % 10;
+  const tip = { half: `四捨五入は、千の位の 数字で きめるよ。千の位は 「${d}」。`,
+    up: rest ? "切り上げは、千の位から 下に 0じゃない 数が あれば、一万の位を 1つ 上げるよ。" : "切り上げでも、千の位から 下が ぜんぶ 0なら、そのままで いいんだ。",
+    down: "切り捨ては、千の位から 下を ぜんぶ 0に するよ。一万の位は そのまま。" };
+  let s;
+  if (solved) s = [say("hana", "happy", "3つとも せいかい！"), say("niji", "normal", "やり方で 答えが かわるのが わかったね。")];
+  else if (lvl === 0) s = [say("hana", "normal", "3つの やり方で、答えを 入れてみよう。"), say("niji", "normal", "下の ボタンで、矢印が どこへ 行くか 見られるよ。")];
+  else if (lvl === 1) s = [say("hana", "think", firstNg ? `「${MNAME[firstNg]}」が ちがうみたい。` : "どこが ちがうかな？", 1), say("niji", "normal", tip[firstNg || "half"], 1)];
+  else if (lvl === 2) s = [say("niji", "idea", "下の 数直線で、ちがった やり方の ボタンを おしてみて。矢印の 行き先が 答えだよ。", 1), say("hana", "normal", "左に 行くのが 切り捨て、右に 行くのが 切り上げ！", 1)];
+  else s = [say("niji", "idea", `いっしょに やろう。切り捨ては ${Math.floor(q.n / u) * u}、切り上げは ${rnd(q.n, "up", u)}${rest ? "" : "（下が 0なので そのまま）"}、四捨五入は 千の位が ${d}だから ${rnd(q.n, "half", u)}。`, 1), say("hana", "happy", "入れて みよう！", 1)];
+  return { card, tool, say: s };
+}
+function showArrow(m) { X.anim = (X.anim || []).filter((k) => k !== m).concat(m); drawMini(); }
+function c3Check() {
+  const q = CAMPS[2].qs[qi], u = 10000; X.ng = []; X.val = {};
+  for (const m of C3M) { if (X.ok[m]) continue; const el = $("c3-" + m), v = num(el && el.value); X.val[m] = el ? el.value : "";
+    if (v === rnd(q.n, m, u)) X.ok[m] = true; else X.ng.push(m); }
+  if (!X.ng.length) { solved = true; render(); return; }
+  wrong(null);
+}
+
+/* ---------- キャンプ④：数直線で ためす ---------- */
+function camp4(q) {
+  const u = 10000;
+  if (!nl) { nlInit(q.m, q.T, u, q.T - u); X.found = []; }
+  const lvl = Math.min(miss, 3); nl.mark = lvl >= 2; nl.zone = lvl >= 3 || solved;
+  const card = `<h3 class="k">${MNAME[q.m]}して 一万の位までの がい数に したとき、${q.T} に なる 数を ${FIND}つ 見つけよう。</h3>
+    ${nlHTML(solved ? "" : "この 数で ためす")}
+    <div class="found">${(X.found || []).map((f) => `<span class="k">${f}</span>`).join("")}</div>`;
+  let s;
+  if (solved) s = [say("hana", "happy", `${FIND}つ 見つけたね！`), say("niji", "normal", `みどりの ところの 数は、どれも ${q.T}に なるよ。`)];
+  else if (X.lastMsg) s = [say(X.hit ? "hana" : "niji", X.hit ? "happy" : "think", X.lastMsg, !X.hit), ...(lvl >= 2 && !X.hit ? [say("hana", "idea", lvl >= 3 ? "みどりの ところから えらんでみて！" : `${q.T}の 近くを さがしてみよう。オレンジの しるしの あたりだよ。`, 1)] : [])];
+  else s = [say("niji", "normal", "▲を ゆびで うごかすか、数直線を タップしてね。"), say("hana", "happy", `「この 数で ためす」を おすと、${MTO[q.m]} どうなるか すぐ 言うよ。`)];
+  return { card, say: s };
+}
+function nlTry() {
+  const q = CAMPS[3].qs[qi], r = rnd(nl.v, q.m, nl.u); nl.tried.push(nl.v);
+  if (r === q.T) {
+    X.hit = true;
+    if (X.found.includes(nl.v)) X.lastMsg = `${nl.v}は もう 見つけたね。ほかの 数も ためしてみて。`;
+    else { X.found.push(nl.v); X.lastMsg = `${nl.v}を ${MTO[q.m]} ${q.T}！ 1つ 見つけた！`; }
+    if (X.found.length >= FIND) solved = true;
+    render();
+  } else {
+    X.hit = false;
+    X.lastMsg = `${nl.v}を ${MTO[q.m]}、${r}に なっちゃうよ。` + (q.m === "up" && nl.v % nl.u === 0 ? "下が ぜんぶ 0だと、上がらないんだ。" : "");
+    wrong(nl.v);
+  }
+}
+
+/* ---------- キャンプ⑤：はんいを 見つける ---------- */
+function camp5(q) {
+  const u = q.u || 10000, [Lo, Hi] = range(q.m, q.T, u), lvl = Math.min(miss, 3);
+  if (!nl) nlInit(q.m, q.T, u, q.m === "up" ? q.T - u : q.m === "down" ? q.T + u : q.T);
+  nl.zone = lvl >= 3 || solved; nl.mark = lvl >= 2;
+  const val = (k) => X.val && X.val[k] != null ? X.val[k] : "";
+  const card = `<h3 class="k">${MNAME[q.m]}して、${toPlace(u)}の位までの がい数に したとき、${q.T} に なる 数の はんいを 答えよう。</h3>
+    <div class="ansrow">${solved ? `<span class="k" style="font-size:28px">${Lo} 以上　${Hi} 以下</span>`
+      : `<input id="lo" inputmode="numeric" autocomplete="off" aria-label="以上の数" value="${val("lo")}"><span class="k">以上</span>
+         <input id="hi" inputmode="numeric" autocomplete="off" aria-label="以下の数" value="${val("hi")}" onkeydown="if(event.key==='Enter')c5Check()"><span class="k">以下</span>
+         <button class="dark" onclick="c5Check()">こたえる</button>`}</div>`;
+  const tool = `<h4>さわって たしかめる：▲を うごかすと、${MTO[q.m]} どうなるか わかるよ</h4>${nlHTML("")}`;
+  let s;
+  if (solved) s = [say("hana", "happy", "せいかい！"), say("niji", "normal", `${Lo - 1}は ${rnd(Lo - 1, q.m, u)}、${Hi + 1}は ${rnd(Hi + 1, q.m, u)}に なるから、${Lo}と ${Hi}が はじっこなんだね。`)];
+  else if (lvl === 0) s = [say("hana", "normal", `${q.T}に なる、いちばん 小さい 数と いちばん 大きい 数を 考えよう。`), say("niji", "normal", "下の 数直線で ためしながら 考えても いいよ。")];
+  else if (lvl === 1) s = [say("hana", "think", "おしい！ はじっこの 数を たしかめよう。", 1), say("niji", "normal", c5Hint(q, u, last), 1)];
+  else if (lvl === 2) s = [say("niji", "idea", `オレンジの しるしの あたりで ▲を うごかしてみて。みどりの まるは ${q.T}に なる 数だよ。`, 1), say("hana", "normal", "1つずつ ずらして、色が かわる ところを さがそう！", 1)];
+  else s = [say("niji", "idea", `いちばん 小さい 数は ${Lo}。${Lo - 1}は ${rnd(Lo - 1, q.m, u)}に なっちゃう。いちばん 大きい 数は ${Hi}。${Hi + 1}は ${rnd(Hi + 1, q.m, u)}に なっちゃう。`, 1), say("hana", "happy", "みどりの ところが はんいだよ。入れてみよう！", 1)];
+  return { card, tool, say: s };
+}
+function c5Hint(q, u, a) {
+  const [Lo, Hi] = range(q.m, q.T, u);
+  if (!a) return "まずは、思いついた 数を 入れて みよう。";
+  const [lo, hi] = a;
+  if (lo > hi) return "左には 小さいほうの 数、右には 大きいほうの 数を 入れるよ。";
+  for (const m of ["up", "down", "half"]) if (m !== q.m) { const [a1, b1] = range(m, q.T, u); if (lo === a1 && hi === b1) return `それは「${MNAME[m]}」の ときの はんいだね。この もんだいは「${MNAME[q.m]}」だよ。`; }
+  const chk = (n, side) => { const r = rnd(n, q.m, u);
+    if (r !== q.T) return `${n}を ${MTO[q.m]}、${r}に なっちゃうよ。` + (q.m === "up" && n === q.T - u ? "下が ぜんぶ 0だから、上げるものが ないんだ。" : "");
+    if (side === "lo" && n > Lo) return `${n}は ${q.T}に なるね。でも、もっと 小さい 数でも ${q.T}に なるよ。`;
+    if (side === "hi" && n < Hi) return `${n}は ${q.T}に なるね。でも、もっと 大きい 数でも ${q.T}に なるよ。`;
+    return ""; };
+  return (chk(lo, "lo") || `「以上」の ${lo}は せいかい！`) + "<br>" + (chk(hi, "hi") || `「以下」の ${hi}は せいかい！`);
+}
+function c5Check() {
+  const q = CAMPS[4].qs[qi], u = q.u || 10000, lo = num($("lo").value), hi = num($("hi").value);
+  X.val = { lo: $("lo").value, hi: $("hi").value };
+  if (lo === null || hi === null) return;
+  const [Lo, Hi] = range(q.m, q.T, u);
+  if (lo === Lo && hi === Hi) { solved = true; render(); } else wrong([lo, hi]);
+}
+
+/* ================= キャンプ場 ================= */
+const lvOf = (k) => prog.lv[k] || 0;
+const nextCost = (it) => (it.stages[lvOf(it.key)] || [null, null])[1];
+const canPay = (c) => c && Object.entries(c).every(([m, n]) => prog.mats[m] >= n);
+function costHTML(c) {
+  if (!c) return `<span class="cost">かんせい！</span>`;
+  return `<span class="cost">${Object.entries(c).map(([m, n]) => `<span class="${prog.mats[m] < n ? "lack" : ""}"><img src="${matOf(m).img}" alt="${matOf(m).name}">${n}</span>`).join("")}</span>`;
+}
+function boardHTML(mini) {
+  const lions = lvOf("house") >= 2 ? `<span class="visit" style="left:${(prog.pos.house || [70, 40])[0] - 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 14)}%">${Lions.svg("hana", "happy")}</span><span class="visit" style="left:${(prog.pos.house || [70, 40])[0] + 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 16)}%;animation-delay:-.7s">${Lions.svg("niji", "normal")}</span>` : "";
+  const its = ITEMS.map((it) => { const lv = lvOf(it.key), p = prog.pos[it.key];
+    if (!lv || !p) return "";
+    return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"></span>`; }).join("");
+  return `<div class="board" ${mini ? "" : 'id="board"'}>${its}${lions}</div>`;
+}
+function vSite() {
+  const sel = campSel ? itemOf(campSel) : null;
+  const notPlaced = ITEMS.filter((it) => lvOf(it.key) && !prog.pos[it.key]);
+  const msg = campSay || (Object.keys(prog.lv).length ? ["hana", "happy", "すてきな キャンプ場だね！ おいた ものは、ドラッグで うごかせるよ。"] : ["hana", "happy", "ここが きみの キャンプ場！ 材料を つかって ものを つくろう。"]);
+  return `<header class="bar"><button class="back" onclick="go('forest')">◀ 森へ</button><h1 class="k">きみの キャンプ場</h1><span class="sp"></span>
+    <button class="link" onclick="showQR()">べつの 端末で つづける（QR）</button>${matsHTML()}</header>
+  <main><div class="campsite">
+    <div style="position:relative">${boardHTML(false)}
+      ${sel && prog.pos[sel.key] ? `<div class="pop" style="left:${prog.pos[sel.key][0]}%;top:${prog.pos[sel.key][1]}%">
+        <b class="k">${sel.name}</b>${nextCost(sel) ? `<button class="dark" ${canPay(nextCost(sel)) ? "" : "disabled"} onclick="build('${sel.key}')">大きくする</button>${costHTML(nextCost(sel))}` : "<span class='cost'>いちばん 大きいよ</span>"}
+        <button onclick="campSel=null;render()">とじる</button></div>` : ""}
+    </div>
+    <aside class="panel">
+      ${talkHTML([msg])}
+      <h2 class="k">つくる</h2>
+      <div class="shop">${ITEMS.filter((it) => !lvOf(it.key)).map((it) => `<button onclick="build('${it.key}')" ${canPay(nextCost(it)) ? "" : "disabled"}><img src="${campImg(it.stages[0][0])}" alt=""><span><span class="nm k">${it.name}</span><br>${costHTML(nextCost(it))}</span></button>`).join("") || "<p class='k' style='margin:0'>ぜんぶ つくったよ！</p>"}</div>
+      ${notPlaced.length ? `<h2 class="k">おく（キャンプ場へ ドラッグ）</h2><div class="tray">${notPlaced.map((it) => `<span class="ti" data-k="${it.key}" onpointerdown="dragStart(event,'${it.key}')"><img src="${campImg(it.stages[lvOf(it.key) - 1][0])}" alt=""><span>${it.name}</span></span>`).join("")}</div>` : `<p class="note">おいた ものを おすと、大きく できるよ。</p>`}
+    </aside></div></main>`;
+}
+function build(key) {
+  const it = itemOf(key), c = nextCost(it);
+  if (!canPay(c)) { campSay = ["niji", "think", `${it.name}には、材料が もう少し いるよ。がい数の 森で 問題を といて あつめよう！`]; render(); return; }
+  for (const [m, n] of Object.entries(c)) prog.mats[m] -= n;
+  prog.lv[key] = lvOf(key) + 1; justBuilt = key; save();
+  campSay = lvOf(key) === 1 ? ["hana", "happy", `${it.name}が できた！ キャンプ場へ ドラッグして おいてね。`] : ["hana", "happy", `${it.name}が 大きく なったよ！`];
+  if (key === "house" && lvOf(key) === 2) campSay = ["niji", "happy", "大きい 家が できた！ ぼくたちも あそびに 来たよ！"];
+  render(); justBuilt = null;
+  if (prog.pos[key]) spark(key);
+}
+function spark(key) {
+  const it = itemOf(key), p = prog.pos[key], b = $("board"); if (!b || !p) return;
+  for (let i = 0; i < 3; i++) { const s = document.createElement("span"); s.className = "spark"; s.textContent = ["✨", "🌟", "✨"][i];
+    s.style.left = (p[0] + (i - 1) * 4) + "%"; s.style.top = (p[1] - it.h / 2) + "%"; s.style.animationDelay = i * 0.12 + "s"; b.appendChild(s); setTimeout(() => s.remove(), 1300); }
+}
+// ドラッグして おく（おいた ものも、もう一度 ドラッグで うごかせる。おすだけなら「大きくする」）
+let drag = null;
+function dragStart(e, key) {
+  e.preventDefault();
+  const it = itemOf(key), g = document.createElement("div"); g.className = "ghost"; g.innerHTML = `<img src="${campImg(it.stages[lvOf(key) - 1][0])}" alt="">`;
+  document.body.appendChild(g); drag = { key, g }; dragMove(e);
+}
+function dragMove(e) { if (!drag) return; drag.g.style.left = e.clientX + "px"; drag.g.style.top = e.clientY + "px"; }
+function dragEnd(e) {
+  if (!drag) return; const b = $("board"), r = b && b.getBoundingClientRect();
+  if (r && e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
+    // 木のわくの 内がわ（原っぱ）に おさまるように
+    const x = Math.max(12, Math.min(88, (e.clientX - r.left) / r.width * 100)), y = Math.max(26, Math.min(88, (e.clientY - r.top) / r.height * 100));
+    prog.pos[drag.key] = [Math.round(x), Math.round(y)]; save(); campSel = null; campSay = ["hana", "happy", `${itemOf(drag.key).name}を おいたよ。いい 場所だね！`];
+  }
+  drag.g.remove(); drag = null; render();
+}
+window.addEventListener("pointermove", dragMove);
+window.addEventListener("pointerup", dragEnd);
+// キャンプ場で 長おし したとき、選択や メニューが 出ないように する
+for (const ev of ["selectstart", "contextmenu"]) document.addEventListener(ev, (e) => { const t = e.target.nodeType === 3 ? e.target.parentElement : e.target; if (view === "site" && t && t.closest && t.closest(".campsite")) e.preventDefault(); });
+document.addEventListener("pointerdown", (e) => {
+  const t = e.target.closest && e.target.closest("#board .it"); if (view !== "site" || !t) return;
+  const key = t.dataset.k, sx = e.clientX, sy = e.clientY; let moved = false;
+  const mv = (ev) => { if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 8) { moved = true; window.removeEventListener("pointermove", mv); delete prog.pos[key]; campSel = null; render(); dragStart(ev, key); } };
+  window.addEventListener("pointermove", mv);
+  window.addEventListener("pointerup", () => { window.removeEventListener("pointermove", mv); if (!moved) { campSel = campSel === key ? null : key; render(); } }, { once: true });
+});
+
+/* ================= QR と おしらせ ================= */
+function showModal(html) { const m = $("modal"); m.innerHTML = `<div class="box">${html}</div>`; m.hidden = false; }
+function closeModal() { $("modal").hidden = true; }
+function showQR() {
+  const url = location.origin + location.pathname + "#load=" + packSave();
+  let img = "";
+  try { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); img = qr.createImgTag(6, 8, "QRコード"); } catch (e) { img = "<p>QRコードを 作れなかったよ。</p>"; }
+  showModal(`<div class="lions">${L("niji", "normal")}</div><h2 class="k">べつの 端末で つづける</h2>
+    <p class="k">べつの 端末の カメラで、この QR を 読んでね。<br>キャンプ場と、クリアした キャンプが そのまま つづくよ。</p>
+    <div class="qr">${img}</div><div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`);
+}
+// QR から 来たとき：この端末で つづけるか きく
+function checkLoad() {
+  const m = location.hash.match(/^#load=([A-Za-z0-9_-]+)$/); if (!m) return;
+  let data = null; try { data = unpackSave(m[1]); } catch (e) {}
+  history.replaceState(null, "", location.pathname);
+  if (!data) { showModal(`<h2 class="k">QRを 読めなかったよ</h2><p class="k">もう一度 読んでみてね。</p><div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`); return; }
+  window.__load = data;
+  showModal(`<div class="lions">${L("hana", "happy")}${L("niji", "normal")}</div><h2 class="k">つづきが 見つかったよ</h2>
+    <p class="k">クリアした キャンプ ${data.cleared.filter(Boolean).length}／5、つくった もの ${Object.keys(data.lv).length}こ。<br>この 端末で つづける？（いまの この端末の きろくは 上書きされるよ）</p>
+    <div class="row"><button onclick="closeModal()">やめる</button><button class="dark" onclick="prog=Object.assign(blank(),window.__load);save();closeModal();render()">つづける</button></div>`);
+}
+
+/* ================= 表示 ================= */
+function render() {
+  $("app").innerHTML = view === "forest" ? vForest() : view === "map" ? vMap() : view === "site" ? vSite() : vCamp();
+  document.body.classList.toggle("outdoor", view === "forest" || view === "map");
+  document.body.classList.toggle("forestbg", view === "forest" || view === "map");
+  fitForest();
+  const first = document.querySelector(".qcard input:not([disabled])"); if (first && !solved && intro < 0) first.focus({ preventScroll: true });
+}
+render();
+checkLoad();
+</script>
+</body>
+</html>
