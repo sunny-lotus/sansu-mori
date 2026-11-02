@@ -230,6 +230,13 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
   .forest .isle b{width:40px;height:40px;font-size:20px}
   .forest .spot .tag{font-size:13px;padding:0 8px}
 }
+.board .camp-lion{padding:0;border:0;background:transparent;box-shadow:none;min-width:0;touch-action:none;cursor:grab;transition:none;line-height:0}
+.board .camp-lion:hover{background:transparent;transform:translate(-50%,-100%)}
+.board .camp-lion:focus-visible{outline:3px solid #285db3;outline-offset:4px;border-radius:18px}
+.board .camp-lion.moving{animation:none;cursor:grabbing;z-index:5}
+.board .camp-lion.waving{animation:camp-wave .5s ease-in-out}
+@keyframes camp-wave{0%,100%{transform:translate(-50%,-100%) rotate(0)}25%{transform:translate(-50%,-110%) rotate(-9deg)}75%{transform:translate(-50%,-110%) rotate(9deg)}}
+@media(prefers-reduced-motion:reduce){.board .camp-lion.waving{animation:none}}
 </style>
 </head>
 <body>
@@ -672,7 +679,7 @@ function costHTML(c) {
   return `<span class="cost">${Object.entries(c).map(([m, n]) => `<span class="${prog.mats[m] < n ? "lack" : ""}"><img src="${matOf(m).img}" alt="${matOf(m).name}">${n}</span>`).join("")}</span>`;
 }
 function boardHTML(mini) {
-  const lions = lvOf("house") >= 2 ? `<span class="visit" style="left:${(prog.pos.house || [70, 40])[0] - 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 14)}%">${Lions.svg("hana", "happy")}</span><span class="visit" style="left:${(prog.pos.house || [70, 40])[0] + 10}%;top:${Math.min(92, (prog.pos.house || [70, 40])[1] + 16)}%;animation-delay:-.7s">${Lions.svg("niji", "normal")}</span>` : "";
+  const lions = campLionsHTML(mini);
   const its = ITEMS.map((it) => { const lv = lvOf(it.key), p = prog.pos[it.key];
     if (!lv || !p) return "";
     return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"></span>`; }).join("");
@@ -766,14 +773,82 @@ function checkLoad() {
 
 /* ================= 表示 ================= */
 function render() {
+  cancelCampLionDrag();
   $("app").innerHTML = view === "forest" ? vForest() : view === "map" ? vMap() : view === "site" ? vSite() : vCamp();
   document.body.classList.toggle("outdoor", view === "forest" || view === "map");
   document.body.classList.toggle("forestbg", view === "forest" || view === "map");
   fitForest();
   const first = document.querySelector(".qcard input:not([disabled])"); if (first && !solved && intro < 0) first.focus({ preventScroll: true });
 }
+// Positions share the existing local save and QR transfer data.
+const campLionNames = { hana: 'はなまらいおん', niji: 'にじまらいおん' };
+function campLionPosition(key) {
+  const p = prog.pos['lion-' + key];
+  return Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)
+    ? [Math.max(8, Math.min(92, p[0])), Math.max(25, Math.min(95, p[1]))]
+    : key === 'hana' ? [38, 72] : [62, 76];
+}
+function campLionsHTML(mini) {
+  return Object.keys(campLionNames).map(key => {
+    const [x,y] = campLionPosition(key), style = `left:${x}%;top:${y}%;animation-delay:${key === 'niji' ? '-.7s' : '0s'}`;
+    const art = Lions.svg(key, key === 'hana' ? 'happy' : 'normal');
+    return mini ? `<span class="visit" style="${style}">${art}</span>`
+      : `<button type="button" class="visit camp-lion" data-lion="${key}" style="${style}" aria-label="${campLionNames[key]}。ドラッグや矢印キーで動かす">${art}</button>`;
+  }).join('');
+}
+let campLionDrag = null;
+function cancelCampLionDrag() {
+  if (!campLionDrag) return;
+  const d = campLionDrag; campLionDrag = null;
+  d.node.style.left = d.start[0] + '%'; d.node.style.top = d.start[1] + '%';
+  d.node.classList.remove('moving');
+  try { d.node.releasePointerCapture(d.id); } catch (_) {}
+}
+document.addEventListener('pointerdown', e => {
+  const node = e.target.closest?.('#board .camp-lion');
+  if (view !== 'site' || !node || campLionDrag || (e.button !== undefined && e.button !== 0) || e.isPrimary === false) return;
+  const board = node.closest('#board'), rect = board.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  e.preventDefault(); node.focus({preventScroll:true});
+  campLionDrag = { node, key:node.dataset.lion, id:e.pointerId, rect, start:campLionPosition(node.dataset.lion), x:e.clientX, y:e.clientY, moved:false };
+  node.classList.add('moving');
+  try { node.setPointerCapture(e.pointerId); } catch (_) {}
+});
+document.addEventListener('pointermove', e => {
+  const d = campLionDrag; if (!d || e.pointerId !== d.id) return;
+  if (view !== 'site' || !d.node.isConnected) { cancelCampLionDrag(); return; }
+  const dx = e.clientX-d.x, dy = e.clientY-d.y;
+  if (!d.moved && Math.hypot(dx,dy) < 5) return;
+  d.moved = true; e.preventDefault();
+  d.position = [Math.max(8,Math.min(92,d.start[0]+dx/d.rect.width*100)),Math.max(25,Math.min(95,d.start[1]+dy/d.rect.height*100))];
+  d.node.style.left = d.position[0]+'%'; d.node.style.top = d.position[1]+'%';
+}, {passive:false});
+document.addEventListener('pointerup', e => {
+  const d = campLionDrag; if (!d || e.pointerId !== d.id) return;
+  campLionDrag = null; d.node.classList.remove('moving');
+  try { d.node.releasePointerCapture(d.id); } catch (_) {}
+  if (view !== 'site' || !d.node.isConnected) return;
+  if (d.moved) { prog.pos['lion-'+d.key] = d.position.map(n=>Math.round(n*10)/10); save(); }
+});
+document.addEventListener('pointercancel', e => { if (campLionDrag?.id === e.pointerId) cancelCampLionDrag(); });
+document.addEventListener('lostpointercapture', e => { if (campLionDrag?.id === e.pointerId) cancelCampLionDrag(); }, true);
+window.addEventListener('blur', cancelCampLionDrag);
+document.addEventListener('click', e => {
+  const node = e.target.closest?.('#board .camp-lion'); if (!node || view !== 'site') return;
+  // A drag's click has no gameplay action. A tap makes the lion wave briefly.
+  node.classList.remove('waving'); void node.offsetWidth; node.classList.add('waving');
+});
+document.addEventListener('keydown', e => {
+  const node = e.target.closest?.('#board .camp-lion'), delta = {ArrowLeft:[-3,0],ArrowRight:[3,0],ArrowUp:[0,-3],ArrowDown:[0,3]}[e.key];
+  if (!node || view !== 'site' || !delta) return;
+  e.preventDefault(); const p = campLionPosition(node.dataset.lion);
+  const next = [Math.max(8,Math.min(92,p[0]+delta[0])),Math.max(25,Math.min(95,p[1]+delta[1]))];
+  prog.pos['lion-'+node.dataset.lion] = next; save(); node.style.left=next[0]+'%'; node.style.top=next[1]+'%';
+});
+
 render();
 checkLoad();
 </script>
 </body>
 </html>
+
