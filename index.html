@@ -809,7 +809,7 @@ document.addEventListener('pointerdown', e => {
   if (view !== 'site' || !node || campLionDrag || (e.button !== undefined && e.button !== 0) || e.isPrimary === false) return;
   const board = node.closest('#board'), rect = board.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
-  e.preventDefault(); node.focus({preventScroll:true});
+  e.preventDefault(); stopCampLionWave(node); node.focus({preventScroll:true});
   campLionDrag = { node, key:node.dataset.lion, id:e.pointerId, rect, start:campLionPosition(node.dataset.lion), x:e.clientX, y:e.clientY, moved:false };
   node.classList.add('moving');
   try { node.setPointerCapture(e.pointerId); } catch (_) {}
@@ -836,7 +836,18 @@ window.addEventListener('blur', cancelCampLionDrag);
 document.addEventListener('click', e => {
   const node = e.target.closest?.('#board .camp-lion'); if (!node || view !== 'site') return;
   // A drag's click has no gameplay action. A tap makes the lion wave briefly.
-  node.classList.remove('waving'); void node.offsetWidth; node.classList.add('waving');
+  stopCampLionWave(node); void node.offsetWidth; node.classList.add('waving');
+  // Also clear when animationend is skipped (background tabs or reduced motion).
+  campLionWaveTimers.set(node, setTimeout(() => stopCampLionWave(node), 600));
+});
+const campLionWaveTimers = new WeakMap();
+function stopCampLionWave(node) {
+  clearTimeout(campLionWaveTimers.get(node));
+  campLionWaveTimers.delete(node);
+  node.classList.remove('waving');
+}
+document.addEventListener('animationend', e => {
+  if (e.animationName === 'camp-wave' && e.target.matches?.('#board .camp-lion')) stopCampLionWave(e.target);
 });
 document.addEventListener('keydown', e => {
   const node = e.target.closest?.('#board .camp-lion'), delta = {ArrowLeft:[-3,0],ArrowRight:[3,0],ArrowUp:[0,-3],ArrowDown:[0,3]}[e.key];
