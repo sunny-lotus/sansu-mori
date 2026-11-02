@@ -1,0 +1,14 @@
+{
+  "seconds": 32.0,
+  "sampleRate": 22050,
+  "channels": 2,
+  "bytes": 384984,
+  "notes": 94,
+  "peak": 0.19710221886634827,
+  "rms": 0.05223502591252327,
+  "loopBoundaryJump": 0.00023777848400641233,
+  "sha256": "14d45efbfa490a439d0e440196b0297c0ed7cad1c1ff5714e5e1508b5666e4c6",
+  "sourceSha256": "105a6dbced98de7ae04a317bdd3ba1a5c6b90dc94034439b68cce6635e2781df",
+  "quietestQuarterSecondRms": 0.00013535097241401672,
+  "loudestQuarterSecondRms": 0.07565493136644363
+}

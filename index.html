@@ -254,7 +254,7 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
   <details><summary>音量</summary><div class="sound-volumes">
   <label for="volume-bgm">BGM <output id="value-bgm">18%</output></label><input id="volume-bgm" type="range" min="0" max="100" value="18">
   <label for="volume-se">効果音 <output id="value-se">32%</output></label><input id="volume-se" type="range" min="0" max="100" value="32">
-  <small>録音音源：<a href="https://versilian-studios.com/vcsl/" target="_blank" rel="noopener">VCSL</a>（Versilian Studios・協力演奏者、CC0）。森のためのオリジナル曲。</small></div></details></div>
+  <small>録音音源：<a href="https://versilian-studios.com/vcsl/" target="_blank" rel="noopener">VCSL</a>（Versilian Studios・協力演奏者、CC0）。フルート・チェロ：<a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2 CE</a>（CC0）。BGM「こもれびの小道」第2版。<a href="https://github.com/sunny-lotus/sansu-mori/blob/main/docs/music/SPEC.md" target="_blank" rel="noopener">曲の仕様・制作記録</a></small></div></details></div>
   <p id="sound-status" role="status">音を出すときは ONにしてね。</p>
 </section>
 <div id="app"></div>
@@ -927,7 +927,7 @@ const forestSound = (() => {
     const context = new Audio(), bgm = context.createGain(), se = context.createGain();
     const filter = context.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 6000;
     bgm.connect(filter); filter.connect(context.destination); se.connect(context.destination);
-    engine = { context, bgm, se, samples: new Map(), loads: new Map(), bgmPrepared: false };
+    engine = { context, bgm, se, samples: new Map(), loads: new Map(), bgmPrepared: false, bgmBuffer: null, bgmLoad: null };
     volume();
     context.onstatechange = () => {
       if (context.state !== "running") stopMusic();
@@ -947,6 +947,20 @@ const forestSound = (() => {
   }
   async function loadRecordings(kind) {
     const e = engine;
+    if (kind === 'bgm') {
+      if (e.bgmBuffer) return true;
+      if (!e.bgmLoad) e.bgmLoad = (async () => {
+        try {
+          const response = await fetch('common/audio/forest-komorebi-v2.mp3');
+          if (!response.ok) throw Error('森の音楽を読み込めませんでした');
+          const buffer = await e.context.decodeAudioData(await response.arrayBuffer());
+          if (!Number.isFinite(buffer.duration) || buffer.duration < 31.95) throw Error('森の音楽が短すぎます');
+          e.bgmBuffer = buffer; return true;
+        } catch (_) { e.bgmLoad = null; return false; }
+        finally { e.bgmPrepared = true; }
+      })();
+      return e.bgmLoad;
+    }
     const needed = recordings.filter(item => kind === 'bgm' ? item.instrument !== 'whistle' : item.id === 'glock-c5' || item.instrument === 'whistle');
     const results = await Promise.allSettled(needed.map(item => {
       if (e.samples.has(item.id)) return Promise.resolve();
@@ -1014,6 +1028,16 @@ const forestSound = (() => {
   }
   function startMusic() {
     if (timer !== null || !prefs.bgm || !engine || !engine.bgmPrepared || engine.context.state !== "running" || document.hidden) return;
+    if (engine.bgmBuffer) {
+      const source = engine.context.createBufferSource(), gain = engine.context.createGain(), t = engine.context.currentTime + .04;
+      source.buffer = engine.bgmBuffer; source.loop = true; source.loopStart = 0; source.loopEnd = Math.min(32, engine.bgmBuffer.duration);
+      gain.gain.setValueAtTime(.0001, t); gain.gain.linearRampToValueAtTime(1, t + .12);
+      source.connect(gain); gain.connect(engine.bgm); active.bgm.add(source);
+      source.onended = () => { active.bgm.delete(source); source.disconnect(); gain.disconnect(); };
+      source.start(t);
+      timer = window.setInterval(() => { if (document.hidden || !prefs.bgm || engine.context.state !== 'running') stopMusic(); }, 500);
+      return;
+    }
     cursor = 0; nextTime = engine.context.currentTime + .04;
     timer = window.setInterval(schedule, 80); schedule();
   }

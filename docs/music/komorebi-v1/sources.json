@@ -1,0 +1,30 @@
+[
+  {
+    "id": "flute",
+    "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/Woodwinds/Flute/susNV/LDFlute_susNV_C4_v1_1.wav",
+    "sha256": "105a6dbced98de7ae04a317bdd3ba1a5c6b90dc94034439b68cce6635e2781df",
+    "library": "VSCO 2 CE",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "marimba",
+    "url": "https://sunny-lotus.github.io/manabi-portal/common/audio/marimba-c4.wav",
+    "sha256": "6d3a893b4af2fcdccab22f1a1d7a79f1fef7cb409d2ae659b50e0e4f112c9506",
+    "library": "VCSL",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "cello",
+    "url": "https://sunny-lotus.github.io/manabiquest/common/audio/cello-d2.wav",
+    "sha256": "dfdcd7e1237aee95d9c550548b9bee470b8867b16063fe5f82d17660bef3454a",
+    "library": "VSCO 2 CE",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "bells",
+    "url": "https://sunny-lotus.github.io/manabi-portal/common/audio/glock-c5.wav",
+    "sha256": "1542412c313f54c7d473ed1a58aa83b99082320d56a78849b48871ef1f4afbba",
+    "library": "VCSL",
+    "license": "CC0-1.0"
+  }
+]
