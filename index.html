@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<!-- このファイルだけで 開ける版。絵などは 公開中の 算数の森から 読みこむ（ネットが いる） -->
+<!-- このファイルだけで 開ける版。絵などは 公開中の さんすうの森から 読みこむ（ネットが いる） -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>算数の森</title>
+<title>さんすうの森</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* 決まり（AIへのおねがい.md）：紙・すみ色の線2px・角14px・さわると浮いて影・余白は8の倍数・文字は13/16/20/28。
-   算数の森らしさ：原っぱの背景、森の緑、いまの キャンプの黄色。 */
+   さんすうの森らしさ：原っぱの背景、森の緑、いまの キャンプの黄色。 */
 :root{--paper:#fbf7f0;--ink:#2b2118;--mute:#8c7f70;--line:#d9cdbb;--white:#fff;
   --theme:#3fae7a;--theme-soft:#dcf3e8;--now:#f2a516;--now-soft:#fde3a6;--ng:#d9483b;--r:14px}
 *{box-sizing:border-box}
@@ -337,9 +337,9 @@ function gain(key, n) {
 /* ================= 森の地図 ================= */
 function vForest() {
   const done = prog.cleared.filter(Boolean).length, any = Object.keys(prog.lv).length;
-  const msg = !any && !done ? [["hana", "happy", "算数の森へ ようこそ！"], ["niji", "normal", "がい数の 森で 問題を といて、材料を もって かえろう。キャンプ場が すこしずつ 大きく なるよ。"]]
+  const msg = !any && !done ? [["hana", "happy", "さんすうの森へ ようこそ！"], ["niji", "normal", "がい数の 森で 問題を といて、材料を もって かえろう。キャンプ場が すこしずつ 大きく なるよ。"]]
     : [["hana", "happy", done === 5 ? "がい数の 森の おくまで 行ったね！ すごい！" : `がい数の 森は キャンプ ${done}／5。ゆっくりで いいよ。`], ["niji", "normal", any ? "キャンプ場も にぎやかに なってきたね。" : "材料が たまったら、キャンプ場で ものを つくってみよう。"]];
-  return `<header class="bar"><h1 class="k">算数の森</h1><span class="sp"></span>${matsHTML()}
+  return `<header class="bar"><h1 class="k">さんすうの森</h1><span class="sp"></span>${matsHTML()}
       <button class="link" onclick="location.href='https://sunny-lotus.github.io/manabi-portal/'">まなびひろばへ</button></header>
     <div class="forest" id="forest">
       <button class="spot" style="left:27%;top:96%" onclick="go('site')"><span class="mini">${boardHTML(true)}</span><span class="tag k">きみの キャンプ場</span></button>
