@@ -902,9 +902,10 @@ const forestSound = (() => {
   const chords = [[60,64,67],[60,64,67],[53,57,60],[55,59,62],[57,60,64],[53,57,60],[62,65,69],[55,59,62]];
   const stepTime = 60 / 104 / 4;
   const recordings = [
+    { id: 'forest-se-stage-v2', instrument: 'effect', root: 0, effect: 'stage' },
     { id: 'forest-se-move-v1', instrument: 'effect', root: 0, effect: 'move' },
-    { id: 'forest-se-back-v1', instrument: 'effect', root: 0, effect: 'back' },
-    { id: 'forest-se-lion-v1', instrument: 'effect', root: 0, effect: 'lion' },
+    { id: 'forest-se-back-v2', instrument: 'effect', root: 0, effect: 'back' },
+    { id: 'forest-se-lion-v2', instrument: 'effect', root: 0, effect: 'lion' },
     { id: 'forest-se-correct-v1', instrument: 'effect', root: 0, effect: 'correct' },
     { id: 'forest-se-retry-v1', instrument: 'effect', root: 0, effect: 'retry' },
     { id: 'forest-se-material-v1', instrument: 'effect', root: 0, effect: 'material' },
@@ -1058,7 +1059,9 @@ const forestSound = (() => {
     if (!prefs.se || !engine || engine.context.state !== "running" || document.hidden || (performance.now() - lastSE < 55 && kind !== "clear")) return;
     lastSE = performance.now();
     if (kind === 'clear') stopVoices('se');
-    const recorded = engine.samples.get('forest-se-' + (kind === 'confirm' ? 'correct' : kind) + '-v1');
+    const recordedKind = kind === 'confirm' ? 'correct' : kind;
+    const version = ['back','lion','stage'].includes(recordedKind) ? 'v2' : 'v1';
+    const recorded = engine.samples.get('forest-se-' + recordedKind + '-' + version);
     if (recorded) {
       const source = engine.context.createBufferSource(), gain = engine.context.createGain(), t = engine.context.currentTime + .01;
       source.buffer = recorded.buffer;
@@ -1112,7 +1115,7 @@ const forestSound = (() => {
     const target = event.target.closest('button'); if (!target || target.disabled) return;
     if (target.matches('.camp-lion')) effect('lion');
     else if (target.matches('.back')) effect('back');
-    else if (target.matches('.spot,.camps button')) effect('move');
+    else if (target.matches('.spot')) effect('move');
   });
   function pause() {
     stopMusic(); stopVoices("se");
@@ -1140,11 +1143,16 @@ gain = function (...args) { const result = beforeSoundGain(...args); forestSound
 const beforeSoundBuild = build;
 build = function (key) { const level = lvOf(key), result = beforeSoundBuild(key); if (lvOf(key) > level) forestSound.effect('build'); return result; };
 
+// A single stage cue for both the SVG map and the list of camps.
+const beforeStageSound = startCamp;
+startCamp = function (...args) { const result = beforeStageSound(...args); forestSound.effect('stage'); return result; };
+
 render();
 checkLoad();
 </script>
 </body>
 </html>
+
 
 
 

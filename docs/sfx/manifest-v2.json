@@ -1,0 +1,50 @@
+[
+  {
+    "kind": "back",
+    "file": "common/audio/forest-se-back-v2.wav",
+    "pack": "rpg",
+    "source": "Audio/bookFlip1.ogg",
+    "sourcePage": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "reason": "紙をめくる音で、戻る動きを柔らかく表す",
+    "seconds": 0.6666213151927438,
+    "bytes": 29442,
+    "peak": 0.55,
+    "rms": 0.01886469702241511,
+    "sourceSha256": "fa81ac2fedc8c641661b87e349630a36c9800e795e0c800e029214efdbe26a7d",
+    "sha256": "8ad394bb75a920110980113234588ccfa8e7f177652ad4f47138f57a15b3218e"
+  },
+  {
+    "kind": "lion",
+    "file": "common/audio/forest-se-lion-v2.wav",
+    "pack": "impact",
+    "source": "Audio/impactWood_light_001.ogg",
+    "sourcePage": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "reason": "触れた手応えを小さな木の音で表す",
+    "seconds": 0.16136054421768709,
+    "bytes": 7160,
+    "peak": 0.55,
+    "rms": 0.059205126707652475,
+    "sourceSha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f",
+    "sha256": "e17db1977a31d29f88a90d2ccd3abb283395cd36f4488c13a9447415bc332c05"
+  },
+  {
+    "kind": "stage",
+    "file": "common/audio/forest-se-stage-v2.wav",
+    "pack": "interface",
+    "source": "Audio/confirmation_001.ogg",
+    "sourcePage": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "reason": "通常操作と区別できる、短いステージ決定音",
+    "seconds": 0.28984126984126984,
+    "bytes": 12826,
+    "peak": 0.3928766695031007,
+    "rms": 0.12,
+    "sourceSha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
+    "sha256": "fd0ee9c75e05942824dc3fa766855914afcea67e20611eb961d7d15dd951559d"
+  }
+]

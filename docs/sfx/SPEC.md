@@ -1,6 +1,6 @@
 # さんすうの森 効果音・選定仕様書
 
-作成：2026-11-02 / 素材セット：forest-se-v1
+作成・更新：2026-11-02 / 素材セット：基本v1＋戻る・らいおん・ステージ選択v2
 
 ## 要望と方針
 
@@ -13,8 +13,9 @@
 | 場面 | 配布パック / 素材名 | 加工・選定理由 |
 | --- | --- | --- |
 | 地図・メニュー操作 | Interface Sounds / click_001 | 短いクリック。操作を邪魔しない長さ |
-| 戻る | Interface Sounds / back_001 | 前の画面に戻ったことを短く知らせる |
-| らいおんに触れる | Interface Sounds / pluck_001 | 小さく弾いた音で、キャラに触れた反応を表す |
+| 戻る（v2） | RPG Audio / bookFlip1 | 紙をめくる音で、戻る動きを柔らかく表す |
+| らいおんに触れる（v2） | Impact Sounds / impactWood_light_001 | 小さな木の音で触れた手応えを表す |
+| ステージ選択（v2） | Interface Sounds / confirmation_001 | 通常操作と区別する短い決定音。地図のテントと一覧で共通 |
 | 正解 | Interface Sounds / confirmation_002 | 成功を知らせる確認音。再表示だけでは鳴らさない |
 | 考え直す | Interface Sounds / question_002 | 問いかけの音を小さめにし、強い警告の印象を抑える |
 | 材料をもらう | RPG Audio / handleSmallLeather | 材料袋を扱うような質感を添える |
@@ -57,3 +58,11 @@ Python、NumPy、imageio-ffmpegを用意。以下の公式ページから無料�
 作者：Kenney。各パックのライセンス：CC0 1.0。配布されたライセンス文書も `LICENSE-interface.txt`、`LICENSE-impact.txt`、`LICENSE-rpg.txt` に保存。元素材・加工後素材のハッシュ、使用箇所、測定値は [manifest.json](manifest.json) を参照。
 
 この変更は[「こもれびの小道」BGMの仕様・改訂履歴](../music/SPEC.md)と別に管理する。今後の音の変更も、要望・試作・コメント・改訂の順に追記する。
+
+## 第2版の改訂記録
+
+ユーザーのコメント：「戻る音と、キャラをさわったときのおと、ステージを選んだ時の音変えたい」。戻る音とらいおんの音を差し替え、ステージには専用の音を設けた。地図のテントと一覧のどちらを選んでも、ステージ開始に合わせて1回鳴らす。
+
+[新しい3音の試聴](../../common/audio/forest-se-preview-v2.mp3)の順番は、**戻る → らいおん → ステージ選択**。3素材の合計は49,428 bytes。BGMと他の効果音は維持する。旧素材はv1として残し、今回の選定・測定値は [manifest-v2.json](manifest-v2.json) に保存する。
+
+再現時は、前述の3パックを `raw/` に用意し、`python prepare-v2.py` を実行する。第1版の作成手順と試聴音源も引き続き保存する。
