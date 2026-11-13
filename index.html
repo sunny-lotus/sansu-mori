@@ -205,6 +205,7 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .modal h2{font-size:28px;margin:8px 0}
 .modal p{font-size:16px;margin:0 0 16px}
 .modal .qr img{width:240px;height:240px;image-rendering:pixelated}
+.modal .qr img.qrcard{width:240px;height:auto;image-rendering:auto}
 .modal .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
 @media (prefers-reduced-motion:reduce){.camp.now .pic,.board .it.new,.board .visit,.mat.bump,.board .spark,.talk .row,.modal .box,.toast,.arrowanim{animation:none}.arrowanim{stroke-dashoffset:0}button{transition:none}}
@@ -1024,7 +1025,32 @@ function showQR() {
   try { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); img = qr.createImgTag(6, 8, "QRコード"); } catch (e) { img = "<p>QRコードを 作れなかったよ。</p>"; }
   showModal(`<div class="lions">${L("niji", "normal")}</div><h2 class="k">べつの 端末で つづける</h2>
     <p class="k">べつの 端末の カメラで、この QR を 読んでね。<br>キャンプ場と、クリアした キャンプが そのまま つづくよ。</p>
-    <div class="qr">${img}</div><div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`);
+    <div class="qr" id="qrbox">${img}</div>
+    <p class="note" id="qrnote">「ほぞんする」で、この QR を 画像に して のこせるよ。</p>
+    <div class="row"><button onclick="saveQR()">QRを ほぞんする</button><button class="dark" onclick="closeModal()">とじる</button></div>`);
+}
+// QR を 画像（PNG）に して ほぞんする。名前などは 入れない。ほぞんできない ところ（Canva など）では、画像を 長おし／右クリックで ほぞんしてもらう
+function saveQR() {
+  const url = "https://sunny-lotus.github.io/sansu-mori/#load=" + packSave();
+  let qr; try { qr = qrcode(0, "M"); qr.addData(url); qr.make(); } catch (e) { return; }
+  const n = qr.getModuleCount(), cell = Math.max(4, Math.floor(400 / (n + 8))), size = cell * (n + 8), W = size + 48, H = size + 200;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const g = cv.getContext("2d");
+  g.fillStyle = "#fbf7f0"; g.fillRect(0, 0, W, H);
+  g.strokeStyle = "#2b2118"; g.lineWidth = 4; g.strokeRect(2, 2, W - 4, H - 4);
+  g.fillStyle = "#2b2118"; g.textAlign = "center"; g.font = "600 28px 'Klee One', serif";
+  g.fillText("さんすうの森　つづきの QR", W / 2, 52);
+  g.fillStyle = "#fff"; g.fillRect(24, 76, size, size);
+  g.fillStyle = "#2b2118";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect(24 + (c + 4) * cell, 76 + (r + 4) * cell, cell, cell);
+  const d = new Date(), day = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日の きろく`;
+  const camps = prog.cleared.filter(Boolean).length + Object.values(prog.area).reduce((a, x) => a + x.filter(Boolean).length, 0);
+  g.font = "600 20px 'Klee One', serif"; g.fillText(day, W / 2, 76 + size + 40);
+  g.font = "16px 'BIZ UDPGothic', sans-serif"; g.fillText(`クリアした キャンプ ${camps}こ・つくった もの ${Object.keys(prog.lv).length}こ`, W / 2, 76 + size + 72);
+  const png = cv.toDataURL("image/png"), name = `sansu-mori-qr-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}.png`;
+  const box = $("qrbox"); if (box) box.innerHTML = `<img src="${png}" alt="さんすうの森 つづきの QR" class="qrcard">`;
+  try { const a = document.createElement("a"); a.href = png; a.download = name; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
+  const note = $("qrnote"); if (note) note.innerHTML = "ほぞんしたよ。ダウンロードに 入って いなかったら、上の 画像を 長おし（右クリック）して「画像を ほぞん」してね。<br>あとで 続きが すすんだら、もう一度 ほぞんしてね。";
 }
 // QR から 来たとき：この端末で つづけるか きく
 function checkLoad() {
