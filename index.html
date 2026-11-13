@@ -309,30 +309,10 @@ const M_INTRO = [
   [["hana", "happy", "いよいよ 池の おく！ 花だんの 広さを はかろう。"], ["niji", "normal", "1辺が 1mの 正方形の 広さが 1m²（1平方メートル）。長さが m なら、面積は m² で 答えるよ。"], ["hana", "idea", "考え方は cm² と 同じ。切り方の 道具も 使えるよ。"]],
 ];
 
-/* ---------- 仮の 絵（先生の Canva の 絵が できたら、同じ 名前の png を common/img/camp/ に 入れて、ART から 消す） ---------- */
-const ART = (() => {
-  const W = (vb, body) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><g stroke="#5a3b22" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">${body}</g></svg>`);
-  return {
-    "mat-ishi": W("0 0 120 110", `<path d="M14 78 Q10 50 38 38 Q62 26 88 40 Q110 54 104 80 Q94 100 60 100 Q24 100 14 78Z" fill="#b8b4ad"/><path d="M40 58 Q52 50 66 54" fill="none" stroke-width="4"/><path d="M74 72 Q82 68 88 74" fill="none" stroke-width="4"/>`),
-    "in-nebukuro": W("0 0 160 80", `<rect x="8" y="22" width="144" height="50" rx="24" fill="#4f9bd0"/><rect x="8" y="22" width="46" height="50" rx="22" fill="#f4efe2"/><path d="M62 30 V64" fill="none"/><path d="M80 47 H140" fill="none" stroke-dasharray="2 12"/>`),
-    "in-makura": W("0 0 100 60", `<path d="M10 30 Q10 10 30 12 L70 12 Q90 10 90 30 Q90 50 70 48 L30 48 Q10 50 10 30Z" fill="#fff"/><path d="M32 26 Q50 32 68 26" fill="none" stroke-width="3"/>`),
-    "in-lamp": W("0 0 80 120", `<path d="M40 4 V18" fill="none"/><path d="M26 18 H54 L50 32 H30Z" fill="#c7743a"/><path d="M24 34 H56 Q64 62 56 90 H24 Q16 62 24 34Z" fill="#fde3a6"/><circle cx="40" cy="62" r="10" fill="#f2a516"/><rect x="16" y="90" width="48" height="22" rx="6" fill="#c7743a"/>`),
-    "in-ehon": W("0 0 120 70", `<path d="M60 22 Q36 10 10 16 V58 Q36 52 60 62 Q84 52 110 58 V16 Q84 10 60 22Z" fill="#fff"/><path d="M60 22 V62" fill="none"/><path d="M20 30 Q34 26 48 32 M20 42 Q34 38 48 44 M72 32 Q86 26 100 30" fill="none" stroke-width="3"/><circle cx="86" cy="44" r="6" fill="#d9483b" stroke-width="3"/>`),
-    "in-shikimono": W("0 0 200 70", `<ellipse cx="100" cy="36" rx="92" ry="28" fill="#d9483b"/><ellipse cx="100" cy="36" rx="64" ry="18" fill="#f2a516"/><ellipse cx="100" cy="36" rx="32" ry="8" fill="#3fae7a"/>`),
-    "in-kago": W("0 0 110 90", `<circle cx="38" cy="38" r="14" fill="#d9483b"/><circle cx="62" cy="32" r="14" fill="#f2a516"/><circle cx="80" cy="42" r="12" fill="#d9483b"/><path d="M28 44 Q55 2 82 44" fill="none"/><path d="M12 44 H98 L88 84 H22Z" fill="#c99a63"/><path d="M20 58 H90 M24 72 H86" fill="none" stroke-width="3"/>`),
-    "in-table": W("0 0 160 104", `<path d="M66 6 H88 V22 H66Z" fill="#fff" stroke-width="4"/><rect x="20" y="36" width="12" height="62" fill="#a85f2c"/><rect x="128" y="36" width="12" height="62" fill="#a85f2c"/><rect x="6" y="22" width="148" height="16" rx="6" fill="#c7743a"/>`),
-    "in-isu": W("0 0 80 120", `<rect x="14" y="6" width="52" height="44" rx="8" fill="#c7743a"/><rect x="22" y="50" width="8" height="8" fill="#a85f2c"/><rect x="50" y="50" width="8" height="8" fill="#a85f2c"/><rect x="12" y="70" width="10" height="44" fill="#a85f2c"/><rect x="58" y="70" width="10" height="44" fill="#a85f2c"/><rect x="8" y="58" width="64" height="14" rx="5" fill="#c7743a"/>`),
-    "in-bed": W("0 0 180 110", `<rect x="8" y="10" width="22" height="96" rx="6" fill="#c7743a"/><rect x="150" y="40" width="22" height="66" rx="6" fill="#c7743a"/><rect x="26" y="84" width="128" height="14" fill="#a85f2c"/><rect x="26" y="50" width="128" height="36" rx="8" fill="#fff"/><rect x="72" y="44" width="84" height="44" rx="10" fill="#7ac3e8"/><rect x="32" y="34" width="38" height="20" rx="10" fill="#fff"/>`),
-    "in-hondana": W("0 0 100 150", `<rect x="8" y="6" width="84" height="138" rx="6" fill="#c7743a"/><rect x="18" y="16" width="64" height="36" fill="#f3e2c4"/><rect x="18" y="60" width="64" height="36" fill="#f3e2c4"/><rect x="18" y="104" width="64" height="30" fill="#f3e2c4"/><g stroke-width="3"><rect x="22" y="24" width="10" height="28" fill="#d9483b"/><rect x="34" y="28" width="10" height="24" fill="#3fae7a"/><rect x="46" y="22" width="10" height="30" fill="#4f9bd0"/><rect x="22" y="68" width="10" height="28" fill="#f2a516"/><rect x="34" y="68" width="10" height="28" fill="#d9483b"/><rect x="60" y="74" width="18" height="22" fill="#3fae7a"/><rect x="24" y="112" width="40" height="22" fill="#4f9bd0"/></g>`),
-    "in-danro": W("0 0 140 130", `<rect x="10" y="22" width="120" height="102" rx="6" fill="#b8b4ad"/><path d="M22 46 H42 M98 46 H118 M18 72 H34 M108 96 H122" fill="none" stroke-width="3"/><path d="M36 124 V72 Q70 42 104 72 V124Z" fill="#2b2118"/><path d="M50 122 Q48 100 62 90 Q62 104 70 96 Q74 84 70 74 Q94 94 90 122Z" fill="#f2a516"/><path d="M62 122 Q62 110 70 104 Q78 112 76 122Z" fill="#fde3a6"/><rect x="2" y="10" width="136" height="16" rx="5" fill="#a85f2c"/>`),
-    "in-mado": W("0 0 110 110", `<rect x="8" y="8" width="94" height="86" rx="8" fill="#a8dcf0"/><path d="M22 70 Q34 56 48 66 M64 34 Q74 26 86 32" fill="none" stroke="#fff" stroke-width="4"/><path d="M55 8 V94 M8 51 H102" fill="none"/><rect x="2" y="94" width="106" height="12" rx="4" fill="#c7743a"/>`),
-    "in-ueki": W("0 0 90 130", `<path d="M45 72 Q10 62 14 26 Q40 34 45 72Z" fill="#3fae7a"/><path d="M45 72 Q80 60 76 22 Q50 34 45 72Z" fill="#3fae7a"/><path d="M45 74 Q36 32 46 6 Q60 34 45 74Z" fill="#5cc28f"/><path d="M18 74 H72 L64 124 H26Z" fill="#c7743a"/>`),
-    "in-poster": W("0 0 100 120", `<rect x="8" y="6" width="84" height="108" rx="4" fill="#fbf7f0"/><path d="M18 92 L38 54 L52 76 L66 44 L84 92Z" fill="#3fae7a"/><circle cx="72" cy="26" r="9" fill="#f2a516"/><path d="M22 102 Q50 94 78 104" fill="none" stroke-dasharray="3 8" stroke-width="3"/><circle cx="50" cy="12" r="4" fill="#d9483b" stroke-width="3"/>`),
-  };
-})();
+const paintedCampImg = (name) => `https://sunny-lotus.github.io/sansu-mori/common/img/camp/painted/${name}.png`;
 const ROOM_BG = {
-  tent: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" preserveAspectRatio="none"><rect width="300" height="200" fill="#e3cd9c"/><path d="M14 122 L150 10 L286 122Z" fill="#f5e9cf" stroke="#5a3b22" stroke-width="3" stroke-linejoin="round"/><path d="M150 46 L124 122 H176Z" fill="#35577a" stroke="#5a3b22" stroke-width="3" stroke-linejoin="round"/><circle cx="146" cy="84" r="2" fill="#fff"/><circle cx="158" cy="100" r="1.6" fill="#fff"/><circle cx="140" cy="108" r="1.4" fill="#fff"/><path d="M150 10 V46" stroke="#5a3b22" stroke-width="3"/><rect y="122" width="300" height="78" fill="#c9a46a"/><path d="M0 122 H300" stroke="#5a3b22" stroke-width="3"/><path d="M0 146 H300 M0 172 H300" stroke="#b08a52" stroke-width="2"/></svg>`),
-  house: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" preserveAspectRatio="none"><rect width="300" height="122" fill="#f3e2c4"/><path d="${Array.from({ length: 11 }, (_, i) => `M${(i + 1) * 25} 0 V114`).join(" ")}" stroke="#e2cba3" stroke-width="2"/><rect y="114" width="300" height="8" fill="#a85f2c"/><rect y="122" width="300" height="78" fill="#c99a63"/><path d="M0 142 H300 M0 162 H300 M0 182 H300" stroke="#b07f4a" stroke-width="2"/><path d="M0 122 H300" stroke="#5a3b22" stroke-width="2"/></svg>`),
+  tent: paintedCampImg("room-tent"),
+  house: paintedCampImg("room-house"),
 };
 
 /* ================= 材料と 置けるもの ================= */
@@ -340,7 +320,7 @@ const MATS = [
   { key: "donguri", name: "どんぐり", img: "https://sunny-lotus.github.io/sansu-mori/common/img/camp/mat-donguri.png" },
   { key: "maki", name: "まき", img: "https://sunny-lotus.github.io/sansu-mori/common/img/camp/mat-maki.png" },
   { key: "tane", name: "花のたね", img: "https://sunny-lotus.github.io/sansu-mori/common/img/camp/mat-tane.png" },
-  { key: "ishi", name: "石", img: ART["mat-ishi"] },
+  { key: "ishi", name: "石", img: paintedCampImg("mat-ishi") },
 ];
 const ITEMS = [
   { key: "tent", name: "テント", h: 30, stages: [["tent-1", { donguri: 2 }], ["tent-2", { donguri: 4, maki: 2 }], ["tent-3", { donguri: 6, maki: 4, tane: 1 }]] },
@@ -376,7 +356,7 @@ const ALL_ITEMS = () => ITEMS.concat(TENT_ITEMS, HOUSE_ITEMS);
 const DOOR = { tent: { room: "tent", lv: 3 }, house: { room: "house", lv: 2 } };
 let room = "site";
 const roomItems = (r) => ROOMS[r || room].items();
-const campImg = (n) => ART[n] || `https://sunny-lotus.github.io/sansu-mori/common/img/camp/${n}.png`;
+const campImg = (n) => n.startsWith("in-") ? paintedCampImg(n) : `https://sunny-lotus.github.io/sansu-mori/common/img/camp/${n}.png`;
 const matOf = (k) => MATS.find((m) => m.key === k);
 const itemOf = (k) => ALL_ITEMS().find((i) => i.key === k);
 
