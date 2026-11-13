@@ -55,8 +55,15 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .cost span{display:flex;align-items:center;gap:2px}
 .cost img{height:20px;width:auto}
 .cost .lack{color:var(--ng)}
-.toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:20;background:var(--white);border:2px solid var(--ink);border-radius:999px;padding:4px 16px 4px 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;animation:toast 1.8s ease forwards;pointer-events:none}
+.toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:50;background:var(--white);border:2px solid var(--ink);border-radius:999px;padding:4px 16px 4px 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;animation:toast 1.8s ease forwards;pointer-events:none}
 .toast img{height:36px}
+/* きちょうな 素材 */
+.mat.rare{border-color:#c98a1a;background:#fff7d6}
+.toast.rare{top:128px;background:#fff7d6;border-color:#c98a1a;box-shadow:0 0 0 4px #ffe58a;animation:toast 2.6s ease forwards}
+.toast.rare::before,.toast.rare::after{content:"";position:absolute;width:22px;height:22px;background:#f2c230;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:twinkle .7s ease-in-out infinite alternate}
+.toast.rare::before{left:-12px;top:-12px}
+.toast.rare::after{right:-10px;bottom:-10px;animation-delay:.35s}
+@keyframes twinkle{0%{transform:scale(.5) rotate(0)}100%{transform:scale(1.2) rotate(45deg)}}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-8px)}}
 
 /* ---------- 森の地図 ---------- */
@@ -179,7 +186,7 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .board .visit{position:absolute;display:block;height:22%;transform:translate(-50%,-100%);animation:hop2 1.4s ease-in-out infinite;z-index:2}
 .board .visit img{display:block;height:100%;width:auto}
 @keyframes hop2{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
-.board .spark{position:absolute;pointer-events:none;font-size:28px;animation:spark .9s ease-out forwards;z-index:3}
+.board .spark{position:absolute;pointer-events:none;width:24px;height:24px;background:#f2c230;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spark .9s ease-out forwards;z-index:3}
 @keyframes spark{0%{opacity:1;transform:translate(-50%,-50%) scale(.6)}100%{opacity:0;transform:translate(-50%,-160%) scale(1.3)}}
 .pop{position:absolute;z-index:4;background:var(--white);border:2px solid var(--ink);border-radius:var(--r);padding:8px;display:flex;flex-direction:column;gap:8px;min-width:180px;transform:translate(-50%,8px)}
 .pop button{font-size:13px;padding:4px 8px}
@@ -210,6 +217,14 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .modal .btnlike{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:var(--r);padding:8px 16px;background:var(--white);font-weight:700;cursor:pointer}
 .modal .qr img.qrcard{width:240px;height:auto;image-rendering:auto}
 .modal .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.modal .colprev{display:flex;justify-content:center;height:120px;margin:4px 0 8px}
+.modal .colprev img{height:100%;width:auto;max-width:100%;object-fit:contain}
+.modal .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin:0 0 16px}
+.modal .sw{display:flex;align-items:center;gap:6px;padding:6px 8px;font-size:14px;text-align:left;white-space:nowrap}
+.modal .sw i{width:24px;height:24px;border-radius:50%;border:2px solid var(--ink);flex:none}
+.modal .sw.on{outline:4px solid #f2a516;outline-offset:1px}
+.modal .sw .cost{margin-left:auto;flex-wrap:nowrap}
+.modal .colhave{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 8px}
 
 @media (prefers-reduced-motion:reduce){.camp.now .pic,.board .it.new,.board .visit,.mat.bump,.board .spark,.talk .row,.modal .box,.toast,.arrowanim{animation:none}.arrowanim{stroke-dashoffset:0}button{transition:none}}
 @media (max-width:820px){
@@ -312,6 +327,14 @@ const M_INTRO = [
 ];
 
 const paintedCampImg = (name) => `https://sunny-lotus.github.io/sansu-mori/common/img/camp/painted/${name}.png`;
+// きちょうな 素材の 仮の 絵（先生の 絵が できたら 入れかえる）
+const RARE_ART = (() => {
+  const W = (vb, body) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><g stroke="#5a3b22" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">${body}</g></svg>`);
+  return {
+    "rare-kira": W("0 0 120 120", `<path d="M30 52 Q30 104 60 112 Q90 104 90 52Z" fill="#f2c230"/><path d="M22 52 Q24 26 60 24 Q96 26 98 52Z" fill="#c98a1a"/><path d="M60 24 V10" fill="none"/><path d="M44 64 Q42 84 52 96" fill="none" stroke="#fff6c8" stroke-width="7"/><path d="M100 70 L104 82 L116 86 L104 90 L100 102 L96 90 L84 86 L96 82Z" fill="#fff3a0" stroke-width="3"/><path d="M14 80 L17 88 L25 91 L17 94 L14 102 L11 94 L3 91 L11 88Z" fill="#fff3a0" stroke-width="3"/>`),
+    "rare-shinju": W("0 0 120 110", `<path d="M10 70 Q14 102 60 104 Q106 102 110 70Z" fill="#f6c9c0"/><path d="M30 76 Q32 92 38 98 M60 76 V100 M90 76 Q88 92 82 98" fill="none" stroke-width="3"/><circle cx="60" cy="48" r="30" fill="#f7f1fa"/><path d="M44 36 Q50 28 60 28" fill="none" stroke="#ffffff" stroke-width="7"/><path d="M98 14 L101 23 L110 26 L101 29 L98 38 L95 29 L86 26 L95 23Z" fill="#fff3a0" stroke-width="3"/>`),
+  };
+})();
 const ROOM_BG = {
   tent: paintedCampImg("room-tent"),
   house: paintedCampImg("room-house"),
@@ -324,6 +347,15 @@ const MATS = [
   { key: "tane", name: "花のたね", img: "https://sunny-lotus.github.io/sansu-mori/common/img/camp/mat-tane.png" },
   { key: "ishi", name: "石", img: paintedCampImg("mat-ishi") },
 ];
+// きちょうな 素材：場所ごとに 1つ。ときどき 出て、おいた ものの 色を かえられる（花畑・秋の森の ぶんは、場所を 作る ときに たす）
+// colors は [記号, 名前, 見本の 色, いまの 絵に かける フィルター]
+const RARES = [
+  { key: "kira", name: "きらきらどんぐり", area: "gaisu", img: RARE_ART["rare-kira"], colors: [["g", "金色", "#e8b400", "sepia(1) saturate(2.4) hue-rotate(6deg) brightness(1.06)"], ["o", "オレンジ", "#f08a24", "sepia(1) saturate(3.4) hue-rotate(-16deg) brightness(1.02)"], ["r", "赤", "#d9412b", "sepia(1) saturate(4.5) hue-rotate(-44deg) brightness(.92)"]] },
+  { key: "shinju", name: "しんじゅ", area: "menseki", img: RARE_ART["rare-shinju"], colors: [["b", "水色", "#5ab8e6", "sepia(1) saturate(2.6) hue-rotate(160deg) brightness(1.05)"], ["p", "むらさき", "#9a6bd0", "sepia(1) saturate(2.2) hue-rotate(228deg) brightness(.98)"], ["k", "ピンク", "#ef86b4", "sepia(1) saturate(2.8) hue-rotate(290deg) brightness(1.08)"]] },
+];
+const RARE_RATE = 1 / 8; // 1問 おわるごとに 出る わりあい（まちがいや ヒントに かんけい なく 同じ）
+const rareOf = (k) => RARES.find((r) => r.key === k);
+const COLORS = {}; for (const r of RARES) for (const [c, name, hex, filter] of r.colors) COLORS[c] = { name, hex, filter, rare: r.key };
 const ITEMS = [
   { key: "tent", name: "テント", h: 30, stages: [["tent-1", { donguri: 2 }], ["tent-2", { donguri: 4, maki: 2 }], ["tent-3", { donguri: 6, maki: 4, tane: 1 }]] },
   { key: "fire", name: "たき火", h: 20, stages: [["fire-1", { maki: 2 }], ["fire-2", { maki: 5 }]] },
@@ -372,7 +404,7 @@ const num = (s) => { s = String(s || "").replace(/[０-９]/g, (c) => String.fro
 
 /* ================= ほぞん（この端末だけ。べつの端末へは QR） ================= */
 const KEY = "sansu-mori-v1";
-function blank() { return { cleared: [false, false, false, false, false], mats: { donguri: 0, maki: 0, tane: 0, ishi: 0 }, area: { menseki: [false, false, false, false, false] }, lv: {}, pos: {} }; }
+function blank() { return { cleared: [false, false, false, false, false], mats: { donguri: 0, maki: 0, tane: 0, ishi: 0 }, area: { menseki: [false, false, false, false, false] }, rare: { kira: 0, shinju: 0 }, col: {}, lv: {}, pos: {} }; }
 function load() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.cleared)) return Object.assign(blank(), s); } catch (e) {}
   const b = blank();
@@ -381,7 +413,7 @@ function load() {
   return b;
 }
 // 前の きろくに ない 材料や 場所を おぎなう
-function fixProg(p) { p.mats = Object.assign({ donguri: 0, maki: 0, tane: 0, ishi: 0 }, p.mats); p.area = Object.assign({ menseki: [false, false, false, false, false] }, p.area); return p; }
+function fixProg(p) { p.mats = Object.assign({ donguri: 0, maki: 0, tane: 0, ishi: 0 }, p.mats); p.area = Object.assign({ menseki: [false, false, false, false, false] }, p.area); p.rare = Object.assign({ kira: 0, shinju: 0 }, p.rare); p.col = p.col || {}; return p; }
 let prog = fixProg(load());
 function save() { try { localStorage.setItem(KEY, JSON.stringify(prog)); } catch (e) {} }
 // 学ぶ 場所。がい数の 森の きろくは 前と 同じ prog.cleared、ほかは prog.area に のこす
@@ -395,10 +427,10 @@ const clr = (a) => (a || area) === "gaisu" ? prog.cleared : prog.area[a || area]
 const nowCamp = () => { const i = clr().indexOf(false); return i < 0 ? 4 : i; };
 const stateOf = (i) => clr()[i] ? "done" : i === nowCamp() ? "now" : "todo";
 // QR に 入れる 中身：続きの データだけ（名前などは 入れない）
-function packSave() { return btoa(unescape(encodeURIComponent(JSON.stringify({ c: prog.cleared.map((x) => x ? 1 : 0).join(""), m: [prog.mats.donguri, prog.mats.maki, prog.mats.tane, prog.mats.ishi], a: prog.area.menseki.map((x) => x ? 1 : 0).join(""), l: prog.lv, p: prog.pos })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function packSave() { return btoa(unescape(encodeURIComponent(JSON.stringify({ c: prog.cleared.map((x) => x ? 1 : 0).join(""), m: [prog.mats.donguri, prog.mats.maki, prog.mats.tane, prog.mats.ishi], a: prog.area.menseki.map((x) => x ? 1 : 0).join(""), r: RARES.map((x) => prog.rare[x.key] || 0), k: Object.fromEntries(Object.entries(prog.col).map(([k, v]) => [k, (v.c || "0") + v.u])), l: prog.lv, p: prog.pos })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 function unpackSave(s) {
   const o = JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))));
-  return { cleared: o.c.split("").map((x) => x === "1"), mats: { donguri: o.m[0] | 0, maki: o.m[1] | 0, tane: o.m[2] | 0, ishi: o.m[3] | 0 }, area: { menseki: (o.a || "00000").split("").map((x) => x === "1") }, lv: o.l || {}, pos: o.p || {} };
+  return { cleared: o.c.split("").map((x) => x === "1"), mats: { donguri: o.m[0] | 0, maki: o.m[1] | 0, tane: o.m[2] | 0, ishi: o.m[3] | 0 }, area: { menseki: (o.a || "00000").split("").map((x) => x === "1") }, rare: Object.fromEntries(RARES.map((x, i) => [x.key, (o.r || [])[i] | 0])), col: Object.fromEntries(Object.entries(o.k || {}).map(([k, v]) => [k, { c: v[0] === "0" ? "" : v[0], u: v.slice(1) }])), lv: o.l || {}, pos: o.p || {} };
 }
 
 /* ================= 画面の じょうたい ================= */
@@ -408,7 +440,7 @@ const L = (k, m) => `<span class="lion">${Lions.svg(k, m)}</span>`;
 const go = (v) => { view = v; if (v !== "site") room = "site"; render(); window.scrollTo(0, 0); };
 function startCamp(i) { view = "camp"; ci = i; qi = 0; newQ(); intro = 0; render(); window.scrollTo(0, 0); }
 function newQ() { miss = 0; solved = false; last = null; X = {}; nl = null; mini = null; m3Drag = false; }
-function matsHTML(bump) { return `<div class="mats" id="mats">${MATS.map((m) => `<span class="mat ${bump === m.key ? "bump" : ""}" title="${m.name}"><img src="${m.img}" alt="${m.name}">${prog.mats[m.key]}</span>`).join("")}</div>`; }
+function matsHTML(bump) { return `<div class="mats" id="mats">${MATS.map((m) => `<span class="mat ${bump === m.key ? "bump" : ""}" title="${m.name}"><img src="${m.img}" alt="${m.name}">${prog.mats[m.key]}</span>`).join("")}${RARES.filter((r) => prog.rare[r.key] > 0).map((r) => `<span class="mat rare ${bump === r.key ? "bump" : ""}" title="${r.name}"><img src="${r.img}" alt="${r.name}">${prog.rare[r.key]}</span>`).join("")}</div>`; }
 function talkHTML(lines, ctl) {
   return `<div class="talk">${lines.map(([who, mood, t, cls]) => `<div class="row ${who} ${cls || ""}">${L(who, mood)}<div class="bub k">${t}</div></div>`).join("")}${ctl || ""}</div>`;
 }
@@ -416,6 +448,15 @@ function gain(key, n) {
   prog.mats[key] += n; save();
   const m = matOf(key), t = document.createElement("div"); t.className = "toast"; t.innerHTML = `<img src="${m.img}" alt="">${m.name} ＋${n}`;
   document.body.appendChild(t); setTimeout(() => t.remove(), 1900);
+  const box = $("mats"); if (box) box.outerHTML = matsHTML(key);
+}
+
+// きちょうな 素材を もらう（キラッと 光る とくべつな 出かた）
+function gainRare(key) {
+  prog.rare[key] = (prog.rare[key] || 0) + 1; save();
+  const r = rareOf(key), t = document.createElement("div"); t.className = "toast rare"; t.innerHTML = `<img src="${r.img}" alt="">きちょうな ${r.name}！`;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2700);
+  if (typeof forestSound !== "undefined") forestSound.effect("clear");
   const box = $("mats"); if (box) box.outerHTML = matsHTML(key);
 }
 
@@ -556,15 +597,18 @@ function wrong(v) { miss++; last = v; render(); }
 function nextQ() {
   // 1問 おわるごとに 材料を もらえる（まちがえても、ヒントを つかっても もらえる）
   gain(A().camps[ci].mat, 1);
-  if (qi < A().camps[ci].qs.length - 1) { qi++; newQ(); render(); return; }
+  // きちょうな 素材は ときどき 出る。キャンプを はじめて クリアした ときは かならず 1こ
+  const rare = RARES.find((r) => r.area === area), lucky = rare && Math.random() < RARE_RATE;
+  if (qi < A().camps[ci].qs.length - 1) { qi++; newQ(); render(); if (lucky) setTimeout(() => gainRare(rare.key), 700); return; }
   const first = !clr()[ci];
+  if (rare && (first || lucky)) setTimeout(() => gainRare(rare.key), first ? 1800 : 900);
   clr()[ci] = true; save(); forestSound.effect("clear");
   const bonus = A().camps[ci].mat; // あとで わたすので、いまの キャンプの 材料を おぼえておく
   if (first) setTimeout(() => gain(bonus, 2), 900);
   const top = ci === 4;
   showModal(`<div class="lions">${L("hana", "happy")}${L("niji", "normal")}</div>
     <h2 class="k">${top ? A().end + "に ついた！" : `キャンプ${ci + 1} クリア！`}</h2>
-    <p class="k">${top ? A().name + "を さいごまで すすんだね。すごいよ！" : first ? "テントが 緑に なったよ。おまけの 材料も もらえるよ。" : "もう一度 クリアできたね。"}</p>
+    <p class="k">${top ? A().name + "を さいごまで すすんだね。すごいよ！" : first ? `テントが 緑に なったよ。おまけの 材料${rare ? `と、きちょうな ${rare.name}` : ""}も もらえるよ。` : "もう一度 クリアできたね。"}</p>
     <div class="row"><button onclick="closeModal();go('map')">${A().name}へ</button><button class="dark" onclick="closeModal();go('site')">キャンプ場へ</button></div>`);
 }
 const say = (who, mood, t, hint) => [who, mood, t, hint ? "hint" : ""];
@@ -913,6 +957,33 @@ function m4(q) {
 }
 
 /* ================= キャンプ場 ================= */
+// 色かえ：いまの 絵に フィルターを かけて 色を かえる。きれいに 見えない ものは、あとで 先生の 色ちがいの 絵に する
+const colOf = (k) => (prog.col[k] && prog.col[k].c) || "";
+const colStyle = (k) => colOf(k) && COLORS[colOf(k)] ? ` style="filter:${COLORS[colOf(k)].filter}"` : "";
+const hasRareAny = () => RARES.some((r) => prog.rare[r.key] > 0) || Object.keys(prog.col).length > 0;
+let colMsg = "";
+function colorMenu(key) { colMsg = ""; showModal(colorHTML(key)); }
+function colorHTML(key) {
+  const it = itemOf(key), c = prog.col[key] || { c: "", u: "" }, img = campImg(it.stages[lvOf(key) - 1][0]);
+  const sw = (code, name, hex, r) => { const lock = r && !c.u.includes(code);
+    return `<button class="sw ${c.c === code ? "on" : ""}" ${lock && !prog.rare[r.key] ? "disabled" : ""} onclick="setCol('${key}','${code}')"><i style="background:${hex}"></i><span class="k">${name}</span>${lock ? `<span class="cost"><img src="${r.img}" alt="${r.name}">1</span>` : ""}</button>`; };
+  return `<h2 class="k">${it.name}の 色を かえる</h2>
+    <div class="colprev"><img src="${img}" alt="${it.name}"${colStyle(key)}></div>
+    <div class="colhave">${RARES.map((r) => `<span class="mat rare" title="${r.name}"><img src="${r.img}" alt="${r.name}">${prog.rare[r.key] || 0}</span>`).join("")}</div>
+    <p class="k">${colMsg || "はじめての 色は、きちょうな 素材を 1こ つかうよ。<br>一度 手に 入れた 色は、何回でも えらべるよ。"}</p>
+    <div class="swatches">${sw("", "もとの 色", "#ffffff", null)}${RARES.map((r) => r.colors.map(([code, name, hex]) => sw(code, name, hex, r)).join("")).join("")}</div>
+    <p class="note">きらきらどんぐりは がい数の 森、しんじゅは 面積の 池で ときどき 見つかるよ。</p>
+    <div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`;
+}
+function setCol(key, code) {
+  const c = prog.col[key] || { c: "", u: "" };
+  if (code && !c.u.includes(code)) {
+    const r = rareOf(COLORS[code].rare); if (!prog.rare[r.key]) return;
+    prog.rare[r.key]--; c.u += code; colMsg = `${r.name}を 1こ つかって、${COLORS[code].name}を 手に 入れたよ！<br>これからは 何回でも えらべるよ。`;
+  } else colMsg = "";
+  c.c = code; prog.col[key] = c; save(); forestSound.effect("place");
+  render(); const box = document.querySelector("#modal .box"); if (box) box.innerHTML = colorHTML(key);
+}
 const lvOf = (k) => prog.lv[k] || 0;
 const nextCost = (it) => (it.stages[lvOf(it.key)] || [null, null])[1];
 const canPay = (c) => c && Object.entries(c).every(([m, n]) => prog.mats[m] >= n);
@@ -925,7 +996,7 @@ function boardHTML(mini) {
   const lions = r === "tent" ? "" : campLionsHTML(mini, r);
   const its = roomItems(r).map((it) => { const lv = lvOf(it.key), p = prog.pos[it.key];
     if (!lv || !p) return "";
-    return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"></span>`; }).join("");
+    return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"${colStyle(it.key)}></span>`; }).join("");
   return `<div class="board ${r === "house" ? "room house-room" : r === "tent" ? "room" : ""}" ${mini ? "" : 'id="board"'} ${r !== "site" ? `style="--room-bg:url('${ROOM_BG[r]}')"` : ""}>${its}${lions}</div>`;
 }
 const doorOf = (key) => DOOR[key] && lvOf(key) >= DOOR[key].lv ? DOOR[key].room : null;
@@ -945,13 +1016,14 @@ function vSite() {
       ${sel && prog.pos[sel.key] ? `<div class="pop" style="left:${prog.pos[sel.key][0]}%;top:${prog.pos[sel.key][1]}%">
         <b class="k">${sel.name}</b>${door ? `<button class="dark" onclick="enterRoom('${door}')">中に 入る</button>` : ""}
         ${nextCost(sel) ? `<button class="dark" ${canPay(nextCost(sel)) ? "" : "disabled"} onclick="build('${sel.key}')">大きくする</button>${costHTML(nextCost(sel))}` : `<span class='cost'>${sel.stages.length > 1 ? "いちばん 大きいよ" : "かんせい！"}</span>`}
+        ${hasRareAny() ? `<button class="dark" onclick="colorMenu('${sel.key}')">色を かえる</button>` : ""}
         <button onclick="campSel=null;render()">とじる</button></div>` : ""}
     </div>
     <aside class="panel">
       ${talkHTML([msg])}
       <h2 class="k">つくる</h2>
       <div class="shop">${its.filter((it) => !lvOf(it.key)).map((it) => `<button onclick="build('${it.key}')" ${canPay(nextCost(it)) ? "" : "disabled"}><img src="${campImg(it.stages[0][0])}" alt=""><span><span class="nm k">${it.name}</span><br>${costHTML(nextCost(it))}</span></button>`).join("") || "<p class='k' style='margin:0'>ぜんぶ つくったよ！</p>"}</div>
-      ${notPlaced.length ? `<h2 class="k">おく（${room === "site" ? "キャンプ場" : "へや"}へ ドラッグ）</h2><div class="tray">${notPlaced.map((it) => `<span class="ti" data-k="${it.key}" onpointerdown="dragStart(event,'${it.key}')"><img src="${campImg(it.stages[lvOf(it.key) - 1][0])}" alt=""><span>${it.name}</span></span>`).join("")}</div>` : `<p class="note">${room === "site" ? "おいた ものを おすと、大きく できるよ。" + (Object.keys(DOOR).some((k) => doorOf(k)) ? "テントや 家は、おすと 中に 入れるよ。" : "") : "おいた ものは、ドラッグで うごかせるよ。"}</p>`}
+      ${notPlaced.length ? `<h2 class="k">おく（${room === "site" ? "キャンプ場" : "へや"}へ ドラッグ）</h2><div class="tray">${notPlaced.map((it) => `<span class="ti" data-k="${it.key}" onpointerdown="dragStart(event,'${it.key}')"><img src="${campImg(it.stages[lvOf(it.key) - 1][0])}" alt=""${colStyle(it.key)}><span>${it.name}</span></span>`).join("")}</div>` : `<p class="note">${room === "site" ? "おいた ものを おすと、大きく できるよ。" + (Object.keys(DOOR).some((k) => doorOf(k)) ? "テントや 家は、おすと 中に 入れるよ。" : "") : "おいた ものは、ドラッグで うごかせるよ。"}${hasRareAny() ? "きちょうな 素材で、おいた ものの 色を かえられるよ。" : ""}</p>`}
     </aside></div></main>`;
 }
 function build(key) {
@@ -968,14 +1040,14 @@ function build(key) {
 }
 function spark(key) {
   const it = itemOf(key), p = prog.pos[key], b = $("board"); if (!b || !p) return;
-  for (let i = 0; i < 3; i++) { const s = document.createElement("span"); s.className = "spark"; s.textContent = ["✨", "🌟", "✨"][i];
+  for (let i = 0; i < 3; i++) { const s = document.createElement("span"); s.className = "spark";
     s.style.left = (p[0] + (i - 1) * 4) + "%"; s.style.top = (p[1] - it.h / 2) + "%"; s.style.animationDelay = i * 0.12 + "s"; b.appendChild(s); setTimeout(() => s.remove(), 1300); }
 }
 // ドラッグして おく（おいた ものも、もう一度 ドラッグで うごかせる。おすだけなら「大きくする」）
 let drag = null;
 function dragStart(e, key) {
   e.preventDefault();
-  const it = itemOf(key), g = document.createElement("div"); g.className = "ghost"; g.innerHTML = `<img src="${campImg(it.stages[lvOf(key) - 1][0])}" alt="">`;
+  const it = itemOf(key), g = document.createElement("div"); g.className = "ghost"; g.innerHTML = `<img src="${campImg(it.stages[lvOf(key) - 1][0])}" alt=""${colStyle(key)}>`;
   document.body.appendChild(g); drag = { key, g }; dragMove(e);
 }
 function dragMove(e) { if (!drag) return; drag.g.style.left = e.clientX + "px"; drag.g.style.top = e.clientY + "px"; }
