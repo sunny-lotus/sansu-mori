@@ -224,6 +224,8 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .modal .sw i{width:24px;height:24px;border-radius:50%;border:2px solid var(--ink);flex:none}
 .modal .sw.on{outline:4px solid #f2a516;outline-offset:1px}
 .modal .sw .cost{margin-left:auto;flex-wrap:nowrap}
+.modal .colask{border:2px solid #c98a1a;background:#fff7d6;border-radius:var(--r);padding:12px;margin:0 0 8px}
+.modal .colask p{margin:0 0 12px}
 .modal .colhave{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 8px}
 
 @media (prefers-reduced-motion:reduce){.camp.now .pic,.board .it.new,.board .visit,.mat.bump,.board .spark,.talk .row,.modal .box,.toast,.arrowanim{animation:none}.arrowanim{stroke-dashoffset:0}button{transition:none}}
@@ -961,28 +963,35 @@ function m4(q) {
 const colOf = (k) => (prog.col[k] && prog.col[k].c) || "";
 const colStyle = (k) => colOf(k) && COLORS[colOf(k)] ? ` style="filter:${COLORS[colOf(k)].filter}"` : "";
 const hasRareAny = () => RARES.some((r) => prog.rare[r.key] > 0) || Object.keys(prog.col).length > 0;
-let colMsg = "";
-function colorMenu(key) { colMsg = ""; showModal(colorHTML(key)); }
+let colMsg = "", colAsk = ""; // colAsk：きちょうな 素材を 使う 前に「いい？」と きいて いる 色
+function colorMenu(key) { colMsg = ""; colAsk = ""; showModal(colorHTML(key)); }
+const colRedraw = (key) => { const box = document.querySelector("#modal .box"); if (box) box.innerHTML = colorHTML(key); };
 function colorHTML(key) {
   const it = itemOf(key), c = prog.col[key] || { c: "", u: "" }, img = campImg(it.stages[lvOf(key) - 1][0]);
   const sw = (code, name, hex, r) => { const lock = r && !c.u.includes(code);
     return `<button class="sw ${c.c === code ? "on" : ""}" ${lock && !prog.rare[r.key] ? "disabled" : ""} onclick="setCol('${key}','${code}')"><i style="background:${hex}"></i><span class="k">${name}</span>${lock ? `<span class="cost"><img src="${r.img}" alt="${r.name}">1</span>` : ""}</button>`; };
   return `<h2 class="k">${it.name}の 色を かえる</h2>
-    <div class="colprev"><img src="${img}" alt="${it.name}"${colStyle(key)}></div>
+    <div class="colprev"><img src="${img}" alt="${it.name}"${colAsk ? ` style="filter:${COLORS[colAsk].filter}"` : colStyle(key)}></div>
     <div class="colhave">${RARES.map((r) => `<span class="mat rare" title="${r.name}"><img src="${r.img}" alt="${r.name}">${prog.rare[r.key] || 0}</span>`).join("")}</div>
+    ${colAsk ? (() => { const r = rareOf(COLORS[colAsk].rare);
+      return `<div class="colask"><p class="k">${r.name}を 1こ つかって、<b>${COLORS[colAsk].name}</b>を 手に 入れる？<br>（いま ${prog.rare[r.key]}こ → ${prog.rare[r.key] - 1}こ）</p>
+        <div class="row"><button onclick="colAsk='';colRedraw('${key}')">やめる</button><button class="dark" onclick="setCol('${key}','${colAsk}',true)">つかう</button></div></div>`; })() : `
     <p class="k">${colMsg || "はじめての 色は、きちょうな 素材を 1こ つかうよ。<br>一度 手に 入れた 色は、何回でも えらべるよ。"}</p>
     <div class="swatches">${sw("", "もとの 色", "#ffffff", null)}${RARES.map((r) => r.colors.map(([code, name, hex]) => sw(code, name, hex, r)).join("")).join("")}</div>
     <p class="note">きらきらどんぐりは がい数の 森、しんじゅは 面積の 池で ときどき 見つかるよ。</p>
-    <div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`;
+    <div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`}`;
 }
-function setCol(key, code) {
+function setCol(key, code, ok) {
   const c = prog.col[key] || { c: "", u: "" };
   if (code && !c.u.includes(code)) {
     const r = rareOf(COLORS[code].rare); if (!prog.rare[r.key]) return;
+    // きちょうな 素材を 使う ときは、色を 見せてから「つかう？」と きく
+    if (!ok) { colAsk = code; colMsg = ""; colRedraw(key); return; }
+    colAsk = "";
     prog.rare[r.key]--; c.u += code; colMsg = `${r.name}を 1こ つかって、${COLORS[code].name}を 手に 入れたよ！<br>これからは 何回でも えらべるよ。`;
   } else colMsg = "";
   c.c = code; prog.col[key] = c; save(); forestSound.effect("place");
-  render(); const box = document.querySelector("#modal .box"); if (box) box.innerHTML = colorHTML(key);
+  render(); colRedraw(key);
 }
 const lvOf = (k) => prog.lv[k] || 0;
 const nextCost = (it) => (it.stages[lvOf(it.key)] || [null, null])[1];
