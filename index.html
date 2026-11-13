@@ -73,7 +73,8 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .forest .isle b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--white);border:2px solid var(--ink);display:grid;place-items:center;font-size:28px}
 .forest .isle.open img{filter:none;opacity:1}
 .forest .spot:disabled{cursor:default;opacity:1}
-.board.room{background-color:#e3cd9c;background-position:center;background-size:100% 100%;background-repeat:no-repeat}
+.board.room{background-color:#e3cd9c;background-image:var(--room-bg);background-position:center;background-size:100% 100%;background-repeat:no-repeat}
+.board.house-room{background-image:linear-gradient(to bottom,transparent 64%,rgba(78,70,66,.24) 67%),var(--room-bg)}
 .areabox{overflow-x:auto;margin:0 0 16px;max-width:100%}\n.campv>*{min-width:0}
 .areasvg{display:block;max-width:100%;height:auto;margin:0 auto;touch-action:none}
 .m3drag .areasvg{cursor:ew-resize}
@@ -239,6 +240,7 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
   .forest .spot .tag{font-size:13px;padding:0 8px}
 }
 .board .camp-lion{padding:0;border:0;background:transparent;box-shadow:none;min-width:0;touch-action:none;cursor:grab;transition:none;line-height:0}
+.board.house-room .camp-lion{height:26.4%}
 .board .camp-lion:hover{background:transparent;transform:translate(-50%,-100%)}
 .board .camp-lion:focus-visible{outline:3px solid #285db3;outline-offset:4px;border-radius:18px}
 .board .camp-lion.moving{animation:none;cursor:grabbing;z-index:5}
@@ -924,7 +926,7 @@ function boardHTML(mini) {
   const its = roomItems(r).map((it) => { const lv = lvOf(it.key), p = prog.pos[it.key];
     if (!lv || !p) return "";
     return `<span class="it ${justBuilt === it.key ? "new" : ""} ${campSel === it.key && !mini ? "sel" : ""}" data-k="${it.key}" style="left:${p[0]}%;top:${p[1]}%;height:${it.h + (lv - 1) * 4}%"><img src="${campImg(it.stages[lv - 1][0])}" alt="${it.name}"></span>`; }).join("");
-  return `<div class="board ${r !== "site" ? "room" : ""}" ${mini ? "" : 'id="board"'} ${r !== "site" ? `style="background-image:url('${ROOM_BG[r]}')"` : ""}>${its}${lions}</div>`;
+  return `<div class="board ${r === "house" ? "room house-room" : r === "tent" ? "room" : ""}" ${mini ? "" : 'id="board"'} ${r !== "site" ? `style="--room-bg:url('${ROOM_BG[r]}')"` : ""}>${its}${lions}</div>`;
 }
 const doorOf = (key) => DOOR[key] && lvOf(key) >= DOOR[key].lv ? DOOR[key].room : null;
 function enterRoom(r) { room = r; campSel = null; campSay = null; render(); window.scrollTo(0, 0); }
