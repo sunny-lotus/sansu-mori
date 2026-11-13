@@ -205,6 +205,8 @@ body.outdoor header.bar{background:rgba(251,247,240,.85)}
 .modal h2{font-size:28px;margin:8px 0}
 .modal p{font-size:16px;margin:0 0 16px}
 .modal .qr img{width:240px;height:240px;image-rendering:pixelated}
+.modal .qrcam video{width:100%;max-width:320px;border:2px solid var(--ink);border-radius:var(--r);background:#000}
+.modal .btnlike{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:var(--r);padding:8px 16px;background:var(--white);font-weight:700;cursor:pointer}
 .modal .qr img.qrcard{width:240px;height:auto;image-rendering:auto}
 .modal .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
@@ -441,7 +443,7 @@ function vForest() {
   const msg = !any && !done ? [["hana", "happy", "さんすうの森へ ようこそ！"], ["niji", "normal", "がい数の 森で 問題を といて、材料を もって かえろう。キャンプ場が すこしずつ 大きく なるよ。"]]
     : [["hana", "happy", done === 5 ? "がい数の 森の おくまで 行ったね！ すごい！" : `がい数の 森は キャンプ ${done}／5。ゆっくりで いいよ。`], ["niji", "normal", !prog.area.menseki.some(Boolean) ? "あたらしく 「面積の 池」に 行けるように なったよ！ 石が もらえるんだ。" : any ? "キャンプ場も にぎやかに なってきたね。" : "材料が たまったら、キャンプ場で ものを つくってみよう。"]];
   return `<header class="bar"><h1 class="k">さんすうの森</h1><span class="sp"></span>${matsHTML()}
-      <button class="link" onclick="location.href='https://sunny-lotus.github.io/manabi-portal/'">まなびひろばへ</button></header>
+      <button class="link" onclick="readQR()">QRを よみこむ</button><button class="link" onclick="location.href='https://sunny-lotus.github.io/manabi-portal/'">まなびひろばへ</button></header>
     <div class="forest" id="forest">
       <button class="spot" style="left:27%;top:96%" onclick="go('site')"><span class="mini">${boardHTML(true)}</span><span class="tag k">きみの キャンプ場</span></button>
       <button class="spot" style="left:76%;top:70%" onclick="area='gaisu';go('map')"><img class="mtn" src="https://sunny-lotus.github.io/sansu-mori/common/img/gaisu-mori.png" alt=""><span class="tag k">がい数の 森（キャンプ ${done}／5）</span></button>
@@ -955,7 +957,7 @@ function vSite() {
   const msg = campSay || first, door = sel && doorOf(sel.key);
   const back = room === "site" ? `<button class="back" onclick="go('forest')">◀ 森へ</button>` : `<button class="back" onclick="enterRoom('site')">◀ キャンプ場へ</button>`;
   return `<header class="bar">${back}<h1 class="k">${ROOMS[room].name}</h1><span class="sp"></span>
-    <button class="link" onclick="showQR()">べつの 端末で つづける（QR）</button>${matsHTML()}</header>
+    <button class="link" onclick="showQR()">べつの 端末で つづける（QR）</button><button class="link" onclick="readQR()">QRを よみこむ</button>${matsHTML()}</header>
   <main><div class="campsite">
     <div style="position:relative">${boardHTML(false)}
       ${sel && prog.pos[sel.key] ? `<div class="pop" style="left:${prog.pos[sel.key][0]}%;top:${prog.pos[sel.key][1]}%">
@@ -1018,7 +1020,7 @@ document.addEventListener("pointerdown", (e) => {
 
 /* ================= QR と おしらせ ================= */
 function showModal(html) { const m = $("modal"); m.innerHTML = `<div class="box">${html}</div>`; m.hidden = false; }
-function closeModal() { $("modal").hidden = true; }
+function closeModal() { if (typeof qrStop === "function") qrStop(); $("modal").hidden = true; }
 function showQR() {
   const url = "https://sunny-lotus.github.io/sansu-mori/#load=" + packSave();
   let img = "";
@@ -1055,13 +1057,82 @@ function saveQR() {
 // QR から 来たとき：この端末で つづけるか きく
 function checkLoad() {
   const m = location.hash.match(/^#load=([A-Za-z0-9_-]+)$/); if (!m) return;
-  let data = null; try { data = unpackSave(m[1]); } catch (e) {}
   history.replaceState(null, "", location.pathname);
+  askLoad(m[1]);
+}
+function askLoad(code) {
+  let data = null; try { data = unpackSave(code); } catch (e) {}
   if (!data) { showModal(`<h2 class="k">QRを 読めなかったよ</h2><p class="k">もう一度 読んでみてね。</p><div class="row"><button class="dark" onclick="closeModal()">とじる</button></div>`); return; }
   window.__load = data;
+  const camps = data.cleared.filter(Boolean).length + data.area.menseki.filter(Boolean).length;
   showModal(`<div class="lions">${L("hana", "happy")}${L("niji", "normal")}</div><h2 class="k">つづきが 見つかったよ</h2>
-    <p class="k">クリアした キャンプ ${data.cleared.filter(Boolean).length}／5、つくった もの ${Object.keys(data.lv).length}こ。<br>この 端末で つづける？（いまの この端末の きろくは 上書きされるよ）</p>
-    <div class="row"><button onclick="closeModal()">やめる</button><button class="dark" onclick="prog=fixProg(Object.assign(blank(),window.__load));save();closeModal();render()">つづける</button></div>`);
+    <p class="k">クリアした キャンプ ${camps}こ、つくった もの ${Object.keys(data.lv).length}こ。<br>この 端末で つづける？（いまの この端末の きろくは 上書きされるよ）</p>
+    <div class="row"><button onclick="closeModal()">やめる</button><button class="dark" onclick="prog=fixProg(Object.assign(blank(),window.__load));save();closeModal();room='site';render()">つづける</button></div>`);
+}
+
+/* ================= QR を よみこむ（カメラ／画像） ================= */
+// 読み取りの 部品：jsQR（Cosmo Wolfe さん、Apache-2.0）。ボタンを おしたときだけ 読みこむ
+let qrLib = null, qrStream = null, qrTimer = null;
+function loadJsQR() {
+  if (window.jsQR) return Promise.resolve(window.jsQR);
+  if (!qrLib) qrLib = new Promise((ok, ng) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"; s.onload = () => ok(window.jsQR); s.onerror = ng; document.head.appendChild(s); });
+  return qrLib;
+}
+function readQR() {
+  showModal(`<div class="lions">${L("hana", "happy")}</div><h2 class="k">QRを よみこむ</h2>
+    <p class="k">ほぞんした QRや、べつの 端末の QRから 続きを はじめるよ。</p>
+    <div class="qrcam" id="qrcam" hidden><video id="qrvideo" playsinline muted></video></div>
+    <p class="note" id="qrmsg"></p>
+    <div class="row"><button onclick="qrCamera()">カメラで よむ</button>
+      <label class="btnlike">画像を えらぶ<input type="file" accept="image/*" onchange="qrFile(this.files[0])" hidden></label>
+      <button class="dark" onclick="qrStop();closeModal()">とじる</button></div>`);
+}
+const qrSay = (t) => { const m = $("qrmsg"); if (m) m.textContent = t; };
+// 読めた 文字から 続きの データを とりだす
+function qrFound(text) {
+  const m = String(text).match(/#load=([A-Za-z0-9_-]+)/);
+  if (!m) { qrSay("さんすうの森の QRじゃ ないみたい。べつの QRを ためしてね。"); return false; }
+  qrStop(); askLoad(m[1]); return true;
+}
+async function qrCamera() {
+  qrSay("カメラを じゅんび して いるよ…");
+  let lib; try { lib = await loadJsQR(); } catch (e) { qrSay("読み取りの じゅんびが できなかったよ。インターネットに つながって いるか たしかめてね。"); return; }
+  try { qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); }
+  catch (e) { qrSay("カメラが つかえないよ。「画像を えらぶ」を ためしてね。"); return; }
+  const v = $("qrvideo"); if (!v) { qrStop(); return; }
+  $("qrcam").hidden = false; v.srcObject = qrStream; v.play();
+  qrSay("QRを カメラに うつしてね。");
+  const cv = document.createElement("canvas"), g = cv.getContext("2d", { willReadFrequently: true });
+  qrTimer = setInterval(() => {
+    if (!v.videoWidth) return;
+    cv.width = v.videoWidth; cv.height = v.videoHeight; g.drawImage(v, 0, 0);
+    const r = lib(g.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height);
+    if (r && r.data) qrFound(r.data);
+  }, 250);
+}
+function qrStop() {
+  clearInterval(qrTimer); qrTimer = null;
+  if (qrStream) { qrStream.getTracks().forEach((t) => t.stop()); qrStream = null; }
+}
+async function qrFile(file) {
+  if (!file) return;
+  qrSay("読んで いるよ…");
+  let lib; try { lib = await loadJsQR(); } catch (e) { qrSay("読み取りの じゅんびが できなかったよ。インターネットに つながって いるか たしかめてね。"); return; }
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    // 大きすぎる 画像は 小さく して 読む（いくつかの 大きさで ためす）
+    for (const max of [1600, 1000, 700]) {
+      const k = Math.min(1, max / Math.max(img.width, img.height)), w = Math.round(img.width * k), h = Math.round(img.height * k);
+      const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const g = cv.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+      const r = lib(g.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "attemptBoth" });
+      if (r && r.data) { qrFound(r.data); return; }
+    }
+    qrSay("QRが 見つからなかったよ。QRが 大きく はっきり うつった 画像を えらんでね。");
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); qrSay("画像を ひらけなかったよ。"); };
+  img.src = url;
 }
 
 /* ================= 表示 ================= */
